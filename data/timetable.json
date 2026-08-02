@@ -48,7 +48,8 @@
         "BTech"
       ],
       "lectureSlotVenue": [
-        "B1"
+        "B1",
+        "ED-1 203/204"
       ],
       "tutorialSlotVenue": [
         "No Tutorial for this Course",
@@ -232,7 +233,7 @@
         "courseCode": "CSP203",
         "courseName": "Software Tool & Technologies Lab",
         "type": "LECTURE",
-        "venue": "L204",
+        "venue": "ED-1 203/204",
         "instructor": "Dr. Anand M Baswade"
       },
       {
