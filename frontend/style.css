@@ -1,0 +1,205 @@
+/* --- DESIGN SYSTEM & FONTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* --- CUSTOM GLOWING BACKGROUND WITH RADIAL GRADIENTS --- */
+html, body, [data-testid="stAppViewContainer"] {
+    background: radial-gradient(circle at 5% 5%, rgba(139, 92, 246, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 95% 85%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+                #07080d !important;
+    font-family: 'Inter', sans-serif;
+    color: #f3f4f6;
+}
+
+h1, h2, h3 {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* --- SIDEBAR STYLING --- */
+[data-testid="stSidebar"] {
+    background-color: #0c0d14 !important;
+    border-right: 1px solid rgba(139, 92, 246, 0.08) !important;
+}
+
+/* Sidebar Header Brand */
+.sidebar-brand {
+    text-align: center;
+    padding: 1.5rem 0;
+}
+
+/* --- REUSABLE CARDS (SIDEBAR) WITH VIBRANT HOVER STATE --- */
+.sidebar-card {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-card:hover {
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.25);
+    background: rgba(139, 92, 246, 0.04);
+    transform: translateY(-2px);
+}
+
+/* --- ACTIVE INTEGRATION DOTS --- */
+.status-dot {
+    height: 8px;
+    width: 8px;
+    background-color: #10B981;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    box-shadow: 0 0 10px #10B981;
+}
+
+.pulse-dot {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* --- CHAT MESSAGE BUBBLES CUSTOM STYLING --- */
+div[data-testid="stChatMessage"] {
+    border-radius: 16px !important;
+    padding: 1.2rem !important;
+    margin-bottom: 1rem !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.02) !important;
+}
+
+/* User Message bubble */
+div[data-testid="stChatMessage"][aria-label="Chat message from user"] {
+    background: rgba(255, 255, 255, 0.015) !important;
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+div[data-testid="stChatMessage"][aria-label="Chat message from user"]:hover {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Assistant Message bubble */
+div[data-testid="stChatMessage"][aria-label="Chat message from assistant"] {
+    background: rgba(139, 92, 246, 0.03) !important;
+    border: 1px solid rgba(139, 92, 246, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+div[data-testid="stChatMessage"][aria-label="Chat message from assistant"]:hover {
+    background: rgba(139, 92, 246, 0.05) !important;
+    border-color: rgba(139, 92, 246, 0.22) !important;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.08) !important;
+}
+
+/* --- CHAT INPUT OVERRIDES --- */
+div[data-testid="stChatInput"] {
+    background-color: rgba(12, 13, 20, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(139, 92, 246, 0.15) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+    transition: all 0.3s ease !important;
+}
+
+div[data-testid="stChatInput"]:focus-within {
+    border-color: rgba(139, 92, 246, 0.45) !important;
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.18) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.01);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.4);
+}
+
+/* --- MAIN SCREEN HEADER --- */
+.main-header {
+    background: linear-gradient(135deg, rgba(109, 40, 217, 0.8) 0%, rgba(139, 92, 246, 0.65) 50%, rgba(192, 132, 252, 0.45) 100%);
+    backdrop-filter: blur(15px);
+    padding: 2rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.main-header h1 {
+    color: white !important;
+    margin: 0 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 2.4rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.5px !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.25) !important;
+}
+
+.main-header p {
+    color: rgba(255, 255, 255, 0.9) !important;
+    margin: 0.5rem 0 0 0 !important;
+    font-size: 1.1rem !important;
+    font-weight: 300 !important;
+    line-height: 1.5 !important;
+}
+
+/* --- TABLE RESPONSIVENESS OVERRIDES --- */
+div[data-testid="stMarkdown"] table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* --- MOBILE RESPONSIVENESS MEDIA QUERIES --- */
+@media (max-width: 768px) {
+    .main-header {
+        padding: 1.2rem;
+        border-radius: 14px;
+        margin-bottom: 1.2rem;
+    }
+    .main-header h1 {
+        font-size: 1.6rem !important;
+    }
+    .main-header p {
+        font-size: 0.9rem !important;
+        margin-top: 0.3rem !important;
+        line-height: 1.4 !important;
+    }
+    div[data-testid="stChatMessage"] {
+        padding: 0.8rem !important;
+        border-radius: 12px !important;
+        margin-bottom: 0.6rem !important;
+    }
+    div[data-testid="stChatInput"] {
+        border-radius: 12px !important;
+    }
+}
+

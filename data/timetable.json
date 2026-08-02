@@ -1,0 +1,572 @@
+{
+  "courses": {
+    "CSL201": {
+      "courseCode": "CSL201/MAL503",
+      "nickname": "CSL201",
+      "courseName": "Discrete Mathematics",
+      "LTP": "3-1-0",
+      "credits": 4,
+      "discipline": [
+        "CSE",
+        "DSAI",
+        "MA"
+      ],
+      "program": [
+        "BTech",
+        "MTECH",
+        "MSC"
+      ],
+      "lectureSlotVenue": [
+        "A",
+        "ED-1 203/204"
+      ],
+      "tutorialSlotVenue": [
+        "B3",
+        "ED-1 203/204"
+      ],
+      "labSlotVenue": [
+        "No Lab for this Course",
+        ""
+      ],
+      "instructor": [
+        "Dr. Rishi Ranjan Singh"
+      ],
+      "remark": [
+        ""
+      ],
+      "Syllabus": "Sets, relations, functions, Equivalence and Partial order relations; Formal logic: Propositional logic and truth tables, normal forms, Predicates and Quantification; Notion of proof: proof techniques, Mathematical Induction; Combinatorics: Basic counting techniques, The pigeonhole principle, countable and uncountable sets, recurrence relations The principle of Inclusion-exclusion; Graph theory: Graph terminology, representation of graphs, Isomorphism, trees, Eulerian and Hamiltonian graphs, Graph coloring and Planar graphs; Number theory: Divisibility, GCD, The Euclidean algorithm, The fundamental theorem of arithmetic, Modular arithmetic; Group theory: Groups, subgroups, finite groups, cyclic groups, permutation groups."
+    },
+    "CSP203": {
+      "courseCode": "CSP203",
+      "courseName": "Software Tool & Technologies Lab",
+      "LTP": "1-0-4",
+      "credits": 3,
+      "discipline": [
+        "CSE"
+      ],
+      "program": [
+        "BTech"
+      ],
+      "lectureSlotVenue": [
+        "B1"
+      ],
+      "tutorialSlotVenue": [
+        "No Tutorial for this Course",
+        ""
+      ],
+      "labSlotVenue": [
+        "U12",
+        "S12",
+        "DEPT"
+      ],
+      "instructor": [
+        "Dr. Anand M Baswade"
+      ],
+      "remark": [
+        ""
+      ],
+      "Syllabus": "Basics of Linux: Linux commands - text editors; Scripting languages; Web programming; Plotting tools; Document processing tools; Version control systems; Debuggers, such as gdb; Containerization with Docker."
+    },
+    "MAL403": {
+      "courseCode": "MAL403/IC105",
+      "nickname": "MAL403",
+      "courseName": "Probability and Statistics",
+      "LTP": "3-1-0",
+      "credits": 4,
+      "discipline": [
+        "CS",
+        "DS",
+        "EE",
+        "ECE",
+        "MT",
+        "MA"
+      ],
+      "program": [
+        "BTech",
+        "MSC"
+      ],
+      "lectureSlotVenue": [
+        "C",
+        "L-209 (LH300)"
+      ],
+      "tutorialSlotVenue": [
+        "H3",
+        "Batch-1 L-201",
+        "Batch-2 L-202",
+        "Batch-3 L-205",
+        "Batch-4 L-206",
+        "Batch-5 L-207",
+        "Batch-6 L-208"
+      ],
+      "labSlotVenue": [
+        "No Lab for this Course",
+        ""
+      ],
+      "instructor": [
+        "Dr. Lakshmi Kanta Patra"
+      ],
+      "remark": [
+        ""
+      ],
+      "Syllabus": "Introduction to set algebra-sigma algebra-Borel sigma algebra-sequence of sets and its limits-limsup and liminf of sequence of sets; Axiomatic definition of probability-probability space-properties of probability functions-conditional probability-Bayes' rule-independence of events-continuity of probability functions-Borel Cantelli lemmas; Random variables-distribution function and its propertyprobability mass and density functions-symmetric distribution and its properties-expectation-momentsmoment generating function-Markov inequality- Chebyshev's inequality; Joint distributions-marginal and conditional distributions-moments-independence of random variables-covariance, and correlation- joint moment generating functions-additive properties of random variables-functions of random variables-ordered Statistics; Special distributions: Discrete uniform-Bernoulli-binomial-geometricnegative binomial-hypergeometric-Poisson-exponential-gamma-normal-bivariate normal distribution; Population-sample-parameters-distributions of the sample mean and the sample variance for a normal population-Chi-Square-t and F distributions-law of large numbers-central limit theorem-point estimation-method of moments-maximum likelihood estimator-unbiasedness; Testing of hypothesis: Null and alternate hypothesis-Neyman Pearson fundamental lemma and its applications-tests for one sample and two sample problems for normal populations-tests for proportions-confidence interval estimation-confidence interval for parameters of normal population."
+    },
+    "CSL202": {
+      "courseCode": "CSL202/MAL504",
+      "nickname": "CSL202",
+      "courseName": "Data Structures",
+      "LTP": "2-1-2",
+      "credits": 4,
+      "discipline": [
+        "CSE",
+        "DSAI",
+        "MA"
+      ],
+      "program": [
+        "BTech",
+        "MSC"
+      ],
+      "lectureSlotVenue": [
+        "F12",
+        "L-101"
+      ],
+      "tutorialSlotVenue": [
+        "F3",
+        "L-101"
+      ],
+      "labSlotVenue": [
+        "O23",
+        "DEPT"
+      ],
+      "instructor": [
+        "Prof. Souradyuti Poul"
+      ],
+      "remark": [
+        ""
+      ],
+      "Syllabus": "Stacks, Queues, Lists; Sorting and Searching; Trees, Tree Traversals; Heaps, Binary Search; Binary Search Trees, Balanced BSTs; Graphs: Representations, Depth First Search, Breadth First Search."
+    },
+    "LAL100": {
+      "courseCode": "LAL100",
+      "courseName": "Introduction to Communication Skills",
+      "LTP": "1-1-0",
+      "credits": 2,
+      "discipline": [
+        "LA"
+      ],
+      "program": [
+        "BTech"
+      ],
+      "lectureSlotVenue": [
+        "G2",
+        "L-201",
+        "L-202",
+        "L-205"
+      ],
+      "tutorialSlotVenue": [
+        "G3",
+        "Batch-1 L-201",
+        "Batch-2 L-202",
+        "Batch-3 L-205",
+        "Batch-4 L-206",
+        "Batch-5 L-207",
+        "Batch-6 L-208"
+      ],
+      "labSlotVenue": [
+        "No Lab for this Course",
+        ""
+      ],
+      "instructor": [
+        "Dr. Sruthi Vinayan",
+        "Dr. Ritika Verma",
+        "Dr. Anubhav Pradhan"
+      ],
+      "remark": "To be divided into three batches; sessions to be in the same slot.",
+      "Syllabus": "Barriers to communication: Basic concepts - Communication Models; Components of communication: Rhetoric and Argumentatio Models and Strategies; Strategies for reading: Reading Methods, Skimming, Scanning, Intensive, and Extensive; Towards careful enunciation: Basics of phonetics; Techniques, common pitfalls; Making presentations: Public Speaking vs Presentations - Presentation styles; Structure and content, Persuasive Speech - Non- verbal communication; Handling group discussions: Types of group discussions, Basic structure; Time Management - Strategies; Writing for technical purposes: Fundamentals of Technical Writing - Types of Documents; Structure and Format - Common Pitfalls; Communication for workplaces: Etiquettes of Professional Communication Situations at Workplace; Communication Ethics."
+    },
+    "LAL252": {
+      "courseCode": "LAL252/LA252",
+      "nickname": "LAL252",
+      "courseName": "Introduction to Stress and Coping",
+      "LTP": "2-0-0",
+      "credits": "2/4",
+      "discipline": [
+        "LA"
+      ],
+      "program": [
+        "BTech"
+      ],
+      "lectureSlotVenue": [
+        "H12",
+        "L-201",
+        "L-202"
+      ],
+      "tutorialSlotVenue": [
+        "No Tutorial for this Course",
+        ""
+      ],
+      "labSlotVenue": [
+        "No Lab for this Course",
+        ""
+      ],
+      "instructor": [
+        "Dr. Eslavath Rajkumar"
+      ],
+      "remark": "",
+      "Syllabus": "Stress: Meaning and nature of stress, types of stress: Stress, Distress, eustress. Physiological response to stress, Hans Seyle's General Adaptation Syndrome, Transactional theory of stress. Source of Stress: Internal factors, External factors, Systemic factors. Impact of Stress: Physical, Emotional and Behavioural level. Coping: Meaning and definition. Types of coping: A) Adaptive coping styles- Confrontive coping, Planful problem solving, seeking social support, accepting responsibility, positive reappraisal; B) Maladaptive coping styles: Distancing, Escape-Avoidance, Denial, Mental Disengagement. Stress Management techniques: 1.Managing stress through physical skills: Simple Breathing Exercise: Deep Breathing, Exhalation Breathing, Restful Sleep, Pranayama and Yoga, Meditation, Progressive Relaxation. 2. Managing stress through mental skills: Guided Imagery, Ventilate your Feelings, Irrational Thought Control, Reaching the Point of Satiation, The Method of Thought Substitution. 3. Stress Management at the Behavioural Level: SMART Goals, Develop Positive Disposition, Reorientation to Work, Countering the Stress of Indecisiveness, Identification and Monitoring of Stress."
+    }
+  },
+  "timetable": {
+    "Monday": [
+      {
+        "time": "08:30 - 09:30",
+        "courseKey": "CSL201",
+        "courseCode": "CSL201/MAL503",
+        "courseName": "Discrete Mathematics",
+        "type": "LECTURE",
+        "venue": "ED-1 203/204",
+        "instructor": "Dr. Rishi Ranjan Singh"
+      },
+      {
+        "time": "09:30 - 10:30",
+        "courseKey": "CSP203",
+        "courseCode": "CSP203",
+        "courseName": "Software Tool & Technologies Lab",
+        "type": "LECTURE",
+        "venue": "L204",
+        "instructor": "Dr. Anand M Baswade"
+      },
+      {
+        "time": "10:30 - 11:30",
+        "courseKey": "MAL403",
+        "courseCode": "MAL403/IC105",
+        "courseName": "Probability and Statistics",
+        "type": "LECTURE",
+        "venue": "L209",
+        "instructor": "Dr. Lakshmi Kanta Patra"
+      },
+      {
+        "time": "11:30 - 12:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "12:30 - 13:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "14:30 - 15:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "15:30 - 16:30",
+        "courseKey": "CSL202",
+        "courseCode": "CSL202/MAL504",
+        "courseName": "Data Structures",
+        "type": "LAB",
+        "venue": "",
+        "instructor": "Prof. Souradyuti Poul"
+      },
+      {
+        "time": "16:30 - 17:30",
+        "courseKey": "CSL202",
+        "courseCode": "CSL202/MAL504",
+        "courseName": "Data Structures",
+        "type": "LAB",
+        "venue": "",
+        "instructor": "Prof. Souradyuti Poul"
+      }
+    ],
+    "Tuesday": [
+      {
+        "time": "08:30 - 09:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "09:30 - 10:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "10:30 - 11:30",
+        "courseKey": "MAL403",
+        "courseCode": "MAL403/IC105",
+        "courseName": "Probability and Statistics",
+        "type": "LECTURE",
+        "venue": "L209",
+        "instructor": "Dr. Lakshmi Kanta Patra"
+      },
+      {
+        "time": "11:30 - 12:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "12:30 - 13:30",
+        "courseKey": "LAL221/LAL252",
+        "courseCode": "LAL221/LA302, LAL252/LA252",
+        "courseName": "Indian Writing in English / Introduction to Stress and Coping",
+        "type": "LECTURE",
+        "venue": "SD2 202,203 / L201,202",
+        "instructor": "Dr. Anubhav Pradhan / Dr. Eslavath Rajkumar"
+      },
+      {
+        "time": "14:30 - 15:30",
+        "courseKey": "CSP203",
+        "courseCode": "CSP203",
+        "courseName": "Software Tool & Technologies Lab",
+        "type": "LAB",
+        "venue": "",
+        "instructor": "Dr. Anand M Baswade"
+      },
+      {
+        "time": "15:30 - 16:30",
+        "courseKey": "CSP203",
+        "courseCode": "CSP203",
+        "courseName": "Software Tool & Technologies Lab",
+        "type": "LAB",
+        "venue": "",
+        "instructor": "Dr. Anand M Baswade"
+      },
+      {
+        "time": "16:30 - 17:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      }
+    ],
+    "Wednesday": [
+      {
+        "time": "08:30 - 09:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "09:30 - 10:30",
+        "courseKey": "CSL201",
+        "courseCode": "CSL201/MAL503",
+        "courseName": "Discrete Mathematics",
+        "type": "LECTURE",
+        "venue": "ED-1 203",
+        "instructor": "Dr. Rishi Ranjan Singh"
+      },
+      {
+        "time": "10:30 - 11:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "11:30 - 12:30",
+        "courseKey": "CSL202",
+        "courseCode": "CSL202/MAL504",
+        "courseName": "Data Structures",
+        "type": "LECTURE",
+        "venue": "L101",
+        "instructor": "Prof. Souradyuti Poul"
+      },
+      {
+        "time": "12:30 - 13:30",
+        "courseKey": "LAL100",
+        "courseCode": "LAL100",
+        "courseName": "Introduction to Communication Skills",
+        "type": "LECTURE",
+        "venue": "L201, L202, L205",
+        "instructor": "Dr. Sruthi Vinayan, Dr. Ritika Verma, Dr. Anubhav Pradhan"
+      },
+      {
+        "time": "14:30 - 15:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "15:30 - 16:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "16:30 - 17:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      }
+    ],
+    "Thursday": [
+      {
+        "time": "08:30 - 09:30",
+        "courseKey": "CSL202",
+        "courseCode": "CSL202/MAL504",
+        "courseName": "Data Structures",
+        "type": "LECTURE",
+        "venue": "L101",
+        "instructor": "Prof. Souradyuti Poul"
+      },
+      {
+        "time": "09:30 - 10:30",
+        "courseKey": "CSL201",
+        "courseCode": "CSL201/MAL503",
+        "courseName": "Discrete Mathematics",
+        "type": "TUTORIAL",
+        "venue": "ED-1 203",
+        "instructor": "Dr. Rishi Ranjan Singh"
+      },
+      {
+        "time": "10:30 - 11:30",
+        "courseKey": "MAL403",
+        "courseCode": "MAL403/IC105",
+        "courseName": "Probability and Statistics",
+        "type": "LECTURE",
+        "venue": "L209",
+        "instructor": "Dr. Lakshmi Kanta Patra"
+      },
+      {
+        "time": "11:30 - 12:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "12:30 - 13:30",
+        "courseKey": "LAL221/LAL252",
+        "courseCode": "LAL221/LA302, LAL252/LA252",
+        "courseName": "Indian Writing in English / Introduction to Stress and Coping",
+        "type": "LECTURE",
+        "venue": "SD2 202,203 / L201,202",
+        "instructor": "Dr. Anubhav Pradhan / Dr. Eslavath Rajkumar"
+      },
+      {
+        "time": "14:30 - 15:30",
+        "courseKey": "CSP203",
+        "courseCode": "CSP203",
+        "courseName": "Software Tool & Technologies Lab",
+        "type": "LAB",
+        "venue": "",
+        "instructor": "Dr. Anand M Baswade"
+      },
+      {
+        "time": "15:30 - 16:30",
+        "courseKey": "CSP203",
+        "courseCode": "CSP203",
+        "courseName": "Software Tool & Technologies Lab",
+        "type": "LAB",
+        "venue": "",
+        "instructor": "Dr. Anand M Baswade"
+      },
+      {
+        "time": "16:30 - 17:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      }
+    ],
+    "Friday": [
+      {
+        "time": "08:30 - 09:30",
+        "courseKey": "LAL100",
+        "courseCode": "LAL100",
+        "courseName": "Introduction to Communication Skills",
+        "type": "TUTORIAL",
+        "venue": "L201, L202",
+        "instructor": "Dr. Sruthi Vinayan, Dr. Ritika Verma, Dr. Anubhav Pradhan"
+      },
+      {
+        "time": "09:30 - 10:30",
+        "courseKey": "CSL201",
+        "courseCode": "CSL201/MAL503",
+        "courseName": "Discrete Mathematics",
+        "type": "LECTURE",
+        "venue": "ED-1 203",
+        "instructor": "Dr. Rishi Ranjan Singh"
+      },
+      {
+        "time": "10:30 - 11:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "11:30 - 12:30",
+        "courseKey": "CSL202",
+        "courseCode": "CSL202/MAL504",
+        "courseName": "Data Structures (Tutorial)",
+        "type": "TUTORIAL",
+        "venue": "L101",
+        "instructor": "Prof. Souradyuti Poul"
+      },
+      {
+        "time": "12:30 - 13:30",
+        "courseKey": "MAL403",
+        "courseCode": "MAL403/IC105",
+        "courseName": "Probability and Statistics (Tutorial)",
+        "type": "TUTORIAL",
+        "venue": "201, 202",
+        "instructor": "Dr. Lakshmi Kanta Patra"
+      },
+      {
+        "time": "14:30 - 15:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "15:30 - 16:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      },
+      {
+        "time": "16:30 - 17:30",
+        "courseKey": null,
+        "courseCode": "No Class",
+        "courseName": "No Class",
+        "venue": "No Class",
+        "instructor": ""
+      }
+    ]
+  }
+}

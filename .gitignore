@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.streamlit/config.toml
+
+# Google API Credentials
+credentials.json
+token.json
+
+# Local integration session state and downloads
+data/whatsapp_session/
+

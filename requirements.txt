@@ -1,0 +1,9 @@
+langchain-core
+langgraph
+langchain-groq
+python-dotenv
+streamlit
+playwright
+google-auth
+google-auth-oauthlib
+google-api-python-client
