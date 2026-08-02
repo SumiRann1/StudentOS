@@ -3,6 +3,7 @@ import uuid
 import sys
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.abspath(os.path.join(current_dir, "../backend"))
@@ -50,7 +51,7 @@ with st.sidebar:
     st.markdown("---")
     
     # 1. System Clock Panel
-    now = datetime.now()
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
     time_str = now.strftime("%I:%M %p")
     day_str = now.strftime("%A, %b %d")
     
