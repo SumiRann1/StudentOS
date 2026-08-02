@@ -12,6 +12,7 @@ from config import llm
 from agents.system_prompt import SYSTEM_POMPT
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 ROUTER_PROMPT = """You are the master router for StudentOS, an intelligent university assistant.
 Analyze the user's latest message and the conversation history. Decide which category the request belongs to:
@@ -51,7 +52,7 @@ def general_chat_node(state: AgentState):
 def initialize_node(state: AgentState):
     current_time = state.get("current_time")
     if not current_time:
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+        current_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M")
         
     current_day = state.get("current_day")
     if not current_day:
