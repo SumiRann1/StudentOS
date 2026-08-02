@@ -26,9 +26,15 @@ class WhatsAppClient:
         user_data_dir = os.path.join(current_dir, "../../../data/whatsapp_session")
         os.makedirs(user_data_dir, exist_ok=True)
         
+        headless_env = os.getenv("WHATSAPP_HEADLESS")
+        if headless_env is not None:
+            headless = headless_env.lower() == "true"
+        else:
+            headless = "DISPLAY" not in os.environ
+
         self.browser_context = self.playwright.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
-            headless=False,
+            headless=headless,
             slow_mo=50,
             no_viewport=True 
         )

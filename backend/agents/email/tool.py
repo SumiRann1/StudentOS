@@ -27,6 +27,11 @@ def get_gmail_service():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
+            if not os.path.exists(CREDENTIALS_FILE):
+                raise FileNotFoundError(
+                    "Gmail credentials.json file is missing. "
+                    "Please upload credentials.json and token.json in the 'Setup & Integrations' page."
+                )
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
         with open(TOKEN_FILE, "w") as f:
