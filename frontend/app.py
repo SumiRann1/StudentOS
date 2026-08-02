@@ -166,19 +166,31 @@ with st.sidebar:
         <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span style="color: rgba(255,255,255,0.8);">📱 WhatsApp Web</span>
-                <div><span style="color: {whatsapp_color}; font-weight: 500; font-size: 0.8rem;">{whatsapp_status}</span></div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="status-dot {'pulse-dot' if whatsapp_color == '#10B981' else ''}" style="background-color: {whatsapp_color}; box-shadow: 0 0 10px {whatsapp_color}; margin-right: 0;"></span>
+                    <span style="color: {whatsapp_color}; font-weight: 500; font-size: 0.8rem;">{whatsapp_status}</span>
+                </div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span style="color: rgba(255,255,255,0.8);">✉️ University Email</span>
-                <div><span style="color: {email_color}; font-weight: 500; font-size: 0.8rem;">{email_status}</span></div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="status-dot {'pulse-dot' if email_color == '#10B981' else ''}" style="background-color: {email_color}; box-shadow: 0 0 10px {email_color}; margin-right: 0;"></span>
+                    <span style="color: {email_color}; font-weight: 500; font-size: 0.8rem;">{email_status}</span>
+                </div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span style="color: rgba(255,255,255,0.8);">📅 Course Timetable</span>
-                <div><span style="color: #10B981; font-weight: 500; font-size: 0.8rem;">🟢 Ready</span></div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="status-dot" style="background-color: #10B981; box-shadow: 0 0 10px #10B981; margin-right: 0;"></span>
+                    <span style="color: #10B981; font-weight: 500; font-size: 0.8rem;">Ready</span>
+                </div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span style="color: rgba(255,255,255,0.8);">🏫 Google Classroom</span>
-                <div><span style="color: {classroom_color}; font-weight: 500; font-size: 0.8rem;">{classroom_status}</span></div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="status-dot {'pulse-dot' if classroom_color == '#10B981' else ''}" style="background-color: {classroom_color}; box-shadow: 0 0 10px {classroom_color}; margin-right: 0;"></span>
+                    <span style="color: {classroom_color}; font-weight: 500; font-size: 0.8rem;">{classroom_status}</span>
+                </div>
             </div>
         </div>
     </div>
