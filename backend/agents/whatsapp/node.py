@@ -1,18 +1,20 @@
 from agents.state import AgentState
-from config import whatsapp_llm, refinement_llm
+from config import whatsapp_llm, refinement_llm, clean_messages_for_non_tool_llm
 from langchain_core.messages import SystemMessage
+from agents.system_prompt import SYSTEM_POMPT
 
-SYSTEM_PROMPT = """You are the StudentOS WhatsApp Assistant, a smart, friendly, and helpful agent dedicated to managing the user's WhatsApp communications.
+WA_PROMPT = """You are the StudentOS WhatsApp Assistant, a smart, friendly, and helpful agent dedicated to managing the user's WhatsApp communications.
 
 You have access to the following tools:
 1. `get_whatsapp_chat_list`: Retrieves all active chats and unread counts. Use this if the user wants to check their messages, see unread messages, or see who messaged them, but has not specified a contact name.
 2. `read_whatsapp_messages`: Reads the latest messages from a specific chat. Always use this when the user asks to read, view, or check messages from a specific contact or group. You can pass a partial name or search query description.
-3. `send_whatsapp_message`: Sends a message to a contact/group. Always use this when the user explicitly asks to send or reply with a message. You can pass a partial name or search query description.
+3. `send_whatsapp_message`: Sends a message to a contact/group. Invoke this tool immediately when the user requests to send or reply with a message; the system will automatically pause execution and prompt the user for confirmation.
 4. `summarize_whatsapp_chat`: Generates a natural language summary of a chat. Use this when the user asks to summarize, catch up, or find what they missed in a specific chat. You can pass a partial name or search query description.
 
 Instructions:
 - If a contact/chat name is required for a tool (read, send, summarize) but the user did not specify one, do NOT guess the contact name. Ask the user for clarification (e.g., "Which contact or group chat would you like to read?").
 - If the user wants to send a message but did not specify the message content, ask them what they would like to send.
+- Note: The system utilizes a Human-in-the-Loop check for `send_whatsapp_message`. Do NOT wait for conversational confirmation. Call the tool directly; the system will automatically present the interactive approval card to the user.
 - Be polite, concise, and focused on helping the student.
 """
 
@@ -63,7 +65,7 @@ def chat_node(state: AgentState):
    current_time = state.get("current_time") or ""
    current_day = state.get("current_day") or ""
    time_prompt = f"\n\nActive Current Time: {current_time}\nActive Current Day: {current_day}" if (current_time or current_day) else ""
-   messages = [SystemMessage(content=SYSTEM_PROMPT + time_prompt)] + state["messages"]
+   messages = [SystemMessage(content=SYSTEM_POMPT + "\n\n" + WA_PROMPT + time_prompt)] + state["messages"]
    response = whatsapp_llm.invoke(messages)
    return {"messages": [response]}
 
@@ -71,6 +73,6 @@ def refinement_node(state: AgentState):
    current_time = state.get("current_time") or ""
    current_day = state.get("current_day") or ""
    time_prompt = f"\n\nActive Current Time: {current_time}\nActive Current Day: {current_day}" if (current_time or current_day) else ""
-   messages = [SystemMessage(content=REFINEMENT_PROMPT + time_prompt)] + state["messages"]
+   messages = [SystemMessage(content=REFINEMENT_PROMPT + time_prompt)] + clean_messages_for_non_tool_llm(state["messages"])
    response = refinement_llm.invoke(messages)
    return {"wa_result": [response]}

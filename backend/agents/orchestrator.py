@@ -8,7 +8,7 @@ from agents.classroom.graph import build_graph as build_classroom_graph
 
 from langchain_core.messages import SystemMessage, ToolMessage, HumanMessage, AIMessage
 from langgraph.checkpoint.memory import MemorySaver
-from config import llm
+from config import llm, clean_messages_for_non_tool_llm
 from agents.system_prompt import SYSTEM_POMPT
 
 from datetime import datetime
@@ -45,7 +45,7 @@ def general_chat_node(state: AgentState):
     current_time = state.get("current_time") or ""
     current_day = state.get("current_day") or ""
     time_prompt = f"\n\nActive Current Time: {current_time}\nActive Current Day: {current_day}" if (current_time or current_day) else ""
-    messages = [SystemMessage(content=SYSTEM_POMPT + time_prompt)] + state["messages"]
+    messages = [SystemMessage(content=SYSTEM_POMPT + time_prompt)] + clean_messages_for_non_tool_llm(state["messages"])
     response = llm.invoke(messages)
     return {"messages": [response], "general_result": [response]}
 

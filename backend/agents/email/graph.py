@@ -26,7 +26,6 @@ def tool_node(state):
                 content = f"Error: Tool '{tool_name}' not found."
             else:
                 try:
-                    # Invoke synchronously on the main thread
                     content = tool.invoke(tool_args)
                 except Exception as e:
                     content = f"Error invoking tool '{tool_name}': {str(e)}"
@@ -47,4 +46,4 @@ def build_graph(state):
     graph.add_conditional_edges("chat", tools_condition)
     graph.add_edge("tools", "chat")
 
-    return graph.compile(checkpointer = MemorySaver())
+    return graph.compile(checkpointer = MemorySaver(), interrupt_before=["tools"])

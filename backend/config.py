@@ -26,5 +26,33 @@ timetable_llm = llm.bind_tools(tools_list_time)
 email_llm = llm.bind_tools(tools_list_email)
 classroom_llm = llm.bind_tools(tools_list_classroom)
 
-refinement_llm = ChatGroq(model="openai/gpt-oss-120b")
+refinement_llm = ChatGroq(model="openai/gpt-oss-20b")
+
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+
+def clean_messages_for_non_tool_llm(messages: list) -> list:
+    """
+    Cleans a list of messages for an LLM invocation that does not have tools bound.
+    It removes or converts ToolMessages and AIMessages with tool_calls,
+    so that the LLM/API provider does not throw a 400 Bad Request error.
+    """
+    cleaned = []
+    for msg in messages:
+        if isinstance(msg, ToolMessage):
+            # Convert ToolMessage to a SystemMessage so the content is preserved
+            # but it is not a ToolMessage anymore.
+            cleaned.append(SystemMessage(content=f"System: Tool '{msg.name}' returned output:\n{msg.content}"))
+        elif isinstance(msg, AIMessage):
+            # If the AIMessage has tool calls, strip them so the API sees it as a text message
+            if msg.tool_calls:
+                content = msg.content
+                if not content:
+                    content = f"[Called tool: {', '.join(tc['name'] for tc in msg.tool_calls)}]"
+                cleaned.append(AIMessage(content=content, response_metadata=msg.response_metadata))
+            else:
+                cleaned.append(msg)
+        else:
+            cleaned.append(msg)
+    return cleaned
+
 

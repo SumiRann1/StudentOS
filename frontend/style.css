@@ -203,3 +203,72 @@ div[data-testid="stMarkdown"] table {
     }
 }
 
+/* --- AGENT STATE INSPECTOR CUSTOM STYLES --- */
+.state-metric-container {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.state-message-card {
+    background: rgba(255, 255, 255, 0.015) !important;
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+    border-radius: 12px !important;
+    padding: 0.85rem !important;
+    margin-bottom: 0.8rem !important;
+    transition: border-color 0.3s ease, background-color 0.3s ease !important;
+}
+
+.state-message-card:hover {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.state-badge {
+    display: inline-block !important;
+    padding: 2px 8px !important;
+    border-radius: 20px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.state-badge-system {
+    background: rgba(139, 92, 246, 0.15) !important;
+    color: #a78bfa !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+.state-badge-human {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+.state-badge-ai {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.state-badge-tool {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+.state-json-block {
+    background-color: #08090f !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 10px !important;
+    padding: 1rem !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 0.85rem !important;
+    overflow-x: auto !important;
+}
+
+

@@ -1,11 +1,52 @@
 import os
 import time
 import re
+import subprocess
+import sys
+import json
 from langchain_core.tools import tool
 from agents.whatsapp.client import WhatsAppClient
 
+def _run_in_subprocess(tool_name: str, args: dict = None) -> any:
+    if args is None:
+        args = {}
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    script_path = os.path.join(current_dir, "run_tool.py")
+    
+    cmd = [sys.executable, script_path, tool_name, json.dumps(args)]
+    env = os.environ.copy()
+    
+    # Run the tool in a standalone python process
+    res = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    
+    try:
+        # Scan lines to find the success/error json line
+        for line in res.stdout.strip().split('\n'):
+            if line.startswith('{"success":') or line.startswith('{"error":'):
+                data = json.loads(line)
+                if not data.get("success", False):
+                    raise Exception(data.get("error", "Unknown subprocess execution error"))
+                return data.get("result")
+        
+        # If no valid JSON is parsed, raise stderr or raw stdout
+        err_msg = res.stderr.strip() or res.stdout.strip() or "No output from tool subprocess"
+        raise Exception(f"Tool subprocess error: {err_msg}")
+    except Exception as e:
+        raise Exception(f"Failed to execute WhatsApp tool '{tool_name}' in subprocess: {e}")
+
 @tool
 def get_whatsapp_chat_list() -> list[dict]:
+    """
+    Return all available WhatsApp chats.
+
+    Returns:
+        List of dictionaries containing:
+            - name: Chat name
+            - unread: Number of unread messages
+    """
+    return _run_in_subprocess("get_whatsapp_chat_list")
+
+def _get_whatsapp_chat_list_impl() -> list[dict]:
     """
     Return all available WhatsApp chats.
 
@@ -167,6 +208,22 @@ def read_whatsapp_messages(chat_name: str, limit: int = 10) -> list[dict]:
             - message
             - timestamp
     """
+    return _run_in_subprocess("read_whatsapp_messages", {"chat_name": chat_name, "limit": limit})
+
+def _read_whatsapp_messages_impl(chat_name: str, limit: int = 10) -> list[dict]:
+    """
+    Read the latest messages from a WhatsApp chat.
+
+    Args:
+        chat_name: Name of the chat (or a search description/partial name).
+        limit: Number of recent messages to return.
+
+    Returns:
+        List of dictionaries containing:
+            - sender
+            - message
+            - timestamp
+    """
     client = WhatsAppClient()
     page = client.get_page()
     resolved_name = open_whatsapp_chat(page, chat_name)
@@ -233,6 +290,19 @@ def send_whatsapp_message(chat_name: str, message: str) -> str:
     Returns:
         Success message.
     """
+    return _run_in_subprocess("send_whatsapp_message", {"chat_name": chat_name, "message": message})
+
+def _send_whatsapp_message_impl(chat_name: str, message: str) -> str:
+    """
+    Send a WhatsApp message.
+
+    Args:
+        chat_name: Recipient name (or a search description/partial name).
+        message: Message text.
+
+    Returns:
+        Success message.
+    """
     client = WhatsAppClient()
     page = client.get_page()
     resolved_name = open_whatsapp_chat(page, chat_name)
@@ -281,8 +351,21 @@ def summarize_whatsapp_chat(chat_name: str, limit: int = 30) -> str:
     Returns:
         Natural language summary.
     """
+    return _run_in_subprocess("summarize_whatsapp_chat", {"chat_name": chat_name, "limit": limit})
 
-    messages = read_whatsapp_messages.func(chat_name=chat_name, limit=limit)
+def _summarize_whatsapp_chat_impl(chat_name: str, limit: int = 30) -> str:
+    """
+    Summarize the latest messages from a WhatsApp chat.
+
+    Args:
+        chat_name: Name of the chat.
+        limit: Number of messages to summarize.
+
+    Returns:
+        Natural language summary.
+    """
+
+    messages = _read_whatsapp_messages_impl(chat_name=chat_name, limit=limit)
     if not messages:
         return f"No messages found in chat '{chat_name}' to summarize."
         

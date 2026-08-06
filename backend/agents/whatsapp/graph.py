@@ -48,4 +48,4 @@ def build_graph(state):
     graph.add_edge("tools", "refinement")
     graph.add_edge("refinement", END)
 
-    return graph.compile(checkpointer = MemorySaver())
+    return graph.compile(checkpointer = MemorySaver(), interrupt_before=["tools"])
