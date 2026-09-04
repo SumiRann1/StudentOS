@@ -10,6 +10,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+import json
+
 SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,28 +23,49 @@ CREDENTIALS_PATH = os.path.join(BASE_DIR, "data", "email_oauth_credentials.json"
 def get_gmail_service():
     """
     Authenticates and builds the Gmail API service object.
-    Uses token.json if available, or initiates OAuth flow with credentials.json.
+    Uses token.json if available, EMAIL_OAUTH_TOKEN_JSON env var, or safe error handling on headless servers.
     """
     creds = None
-    if os.path.exists(TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+    env_token = os.getenv("EMAIL_OAUTH_TOKEN_JSON")
+    if env_token:
+        try:
+            info = json.loads(env_token)
+            creds = Credentials.from_authorized_user_info(info, SCOPES)
+        except Exception:
+            pass
+
+    if not creds and os.path.exists(TOKEN_PATH):
+        try:
+            creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+        except Exception:
+            pass
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception:
+                creds = None
+
+        if not creds or not creds.valid:
+            # If running on Render or non-interactive server, do NOT block process with run_local_server
+            if os.getenv("RENDER") or os.getenv("PORT") or os.getenv("HEADLESS"):
+                raise RuntimeError(
+                    "Gmail OAuth token is missing or invalid on the server. "
+                    "Please upload your email_oauth_token.json via the app Setup menu or set EMAIL_OAUTH_TOKEN_JSON on Render."
+                )
+
             if not os.path.exists(CREDENTIALS_PATH):
                 raise FileNotFoundError(
                     f"Gmail OAuth credentials file not found at '{CREDENTIALS_PATH}'. "
-                    "Please download credentials.json from Google Cloud Console and place it in the 'data' directory."
+                    "Please upload email_oauth_token.json via the app Setup menu."
                 )
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
             creds = flow.run_local_server(port=0)
 
-        # Save credentials for future runs
-        os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
-        with open(TOKEN_PATH, "w", encoding="utf-8") as token_file:
-            token_file.write(creds.to_json())
+            os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
+            with open(TOKEN_PATH, "w", encoding="utf-8") as token_file:
+                token_file.write(creds.to_json())
 
     return build("gmail", "v1", credentials=creds)
 

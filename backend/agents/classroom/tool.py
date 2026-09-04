@@ -10,6 +10,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+import json
+
 SCOPES = [
     "https://www.googleapis.com/auth/classroom.courses.readonly",
     "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
@@ -27,28 +29,49 @@ CREDENTIALS_PATH = os.path.join(BASE_DIR, "data", "classroom_oauth_credentials.j
 def get_classroom_service():
     """
     Authenticates and builds the Google Classroom API service object.
-    Uses token.json if available, or initiates OAuth flow with credentials.json.
+    Uses token.json if available, CLASSROOM_OAUTH_TOKEN_JSON env var, or safe error handling on headless servers.
     """
     creds = None
-    if os.path.exists(TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+    env_token = os.getenv("CLASSROOM_OAUTH_TOKEN_JSON")
+    if env_token:
+        try:
+            info = json.loads(env_token)
+            creds = Credentials.from_authorized_user_info(info, SCOPES)
+        except Exception:
+            pass
+
+    if not creds and os.path.exists(TOKEN_PATH):
+        try:
+            creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+        except Exception:
+            pass
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception:
+                creds = None
+
+        if not creds or not creds.valid:
+            # If running on Render or non-interactive server, do NOT block process with run_local_server
+            if os.getenv("RENDER") or os.getenv("PORT") or os.getenv("HEADLESS"):
+                raise RuntimeError(
+                    "Google Classroom OAuth token is missing or invalid on the server. "
+                    "Please upload your classroom_oauth_token.json via the app Setup menu or set CLASSROOM_OAUTH_TOKEN_JSON on Render."
+                )
+
             if not os.path.exists(CREDENTIALS_PATH):
                 raise FileNotFoundError(
                     f"Google Classroom OAuth credentials file not found at '{CREDENTIALS_PATH}'. "
-                    "Please download credentials.json from Google Cloud Console and place it in the 'data' directory."
+                    "Please upload classroom_oauth_token.json via the app Setup menu."
                 )
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
             creds = flow.run_local_server(port=0)
 
-        # Save credentials for future runs
-        os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
-        with open(TOKEN_PATH, "w", encoding="utf-8") as token_file:
-            token_file.write(creds.to_json())
+            os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
+            with open(TOKEN_PATH, "w", encoding="utf-8") as token_file:
+                token_file.write(creds.to_json())
 
     return build("classroom", "v1", credentials=creds)
 
