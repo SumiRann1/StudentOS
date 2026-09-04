@@ -9,29 +9,31 @@ const PROMPT_SUGGESTIONS = [
   { icon: '📝', text: 'Help me plan my study schedule' },
 ];
 
-export default function ChatInput({ query, setQuery, onSend, disabled, onFocus }) {
+export default function ChatInput({ query, setQuery, onSend, disabled, onFocus, showChips = true }) {
   const canSend = query.trim().length > 0 && !disabled;
 
   return (
     <View style={styles.container}>
       {/* Quick Suggestion Chips */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        contentContainerStyle={styles.chipsContainer}
-      >
-        {PROMPT_SUGGESTIONS.map((item, idx) => (
-          <TouchableOpacity
-            key={idx}
-            style={styles.chip}
-            onPress={() => setQuery(item.text)}
-            disabled={disabled}
-          >
-            <Text style={styles.chipIcon}>{item.icon}</Text>
-            <Text style={styles.chipText}>{item.text}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {showChips && (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.chipsContainer}
+        >
+          {PROMPT_SUGGESTIONS.map((item, idx) => (
+            <TouchableOpacity
+              key={idx}
+              style={styles.chip}
+              onPress={() => setQuery(item.text)}
+              disabled={disabled}
+            >
+              <Text style={styles.chipIcon}>{item.icon}</Text>
+              <Text style={styles.chipText}>{item.text}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
 
       {/* Floating Pill Input Bar (ChatGPT Style) */}
       <View style={styles.pillContainer}>

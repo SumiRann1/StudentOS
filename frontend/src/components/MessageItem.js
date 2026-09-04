@@ -1,6 +1,35 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, Animated, ScrollView } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 import { colors } from '../theme/colors';
+
+const COLUMN_WIDTHS = [125, 210, 115, 140, 140];
+
+// Custom Markdown Rules (Wrap Tables in Horizontal ScrollView with Aligned Columns)
+const markdownRules = {
+  table: (node, children, parent, styles) => (
+    <ScrollView
+      key={node.key}
+      horizontal
+      showsHorizontalScrollIndicator={true}
+      style={{ marginVertical: 8, width: '100%' }}
+      contentContainerStyle={{ minWidth: '100%' }}
+    >
+      <View style={styles.table}>{children}</View>
+    </ScrollView>
+  ),
+  tr: (node, children, parent, styles) => (
+    <View key={node.key} style={styles.tr}>
+      {React.Children.map(children, (child, index) => {
+        if (!React.isValidElement(child)) return child;
+        const cellWidth = COLUMN_WIDTHS[index] || 140;
+        return React.cloneElement(child, {
+          style: [child.props.style, { width: cellWidth, minWidth: cellWidth, maxWidth: cellWidth }],
+        });
+      })}
+    </View>
+  ),
+};
 
 // Animated Blinking Cursor Component (ChatGPT Style)
 function BlinkingCursor() {
@@ -69,10 +98,6 @@ export default function MessageItem({ message }) {
 
   return (
     <View style={[styles.wrapper, isUser ? styles.userWrapper : styles.agentWrapper]}>
-      {!isUser && (
-        <Image source={require('../../assets/app-logo.png')} style={styles.agentAvatarImg} />
-      )}
-
       <View style={[styles.bubble, isUser ? styles.userBubble : styles.agentBubble]}>
         {/* Render tool call execution status badges */}
         {message.toolCalls && message.toolCalls.length > 0 && (
@@ -88,16 +113,134 @@ export default function MessageItem({ message }) {
         {/* Message Content or Thinking State */}
         {isThinking ? (
           <ThinkingIndicator />
-        ) : (
-          <Text style={[styles.messageText, isUser ? styles.userText : styles.agentText]}>
+        ) : isUser ? (
+          <Text style={[styles.messageText, styles.userText]}>
             {message.text}
-            {message.isStreaming && <BlinkingCursor />}
           </Text>
+        ) : (
+          <View style={styles.agentContentContainer}>
+            <Markdown style={markdownStyles} rules={markdownRules}>
+              {message.text || ''}
+            </Markdown>
+            {message.isStreaming && <BlinkingCursor />}
+          </View>
         )}
       </View>
     </View>
   );
 }
+
+const markdownStyles = {
+  body: {
+    color: colors.agentBubbleText,
+    fontSize: 15,
+    lineHeight: 24,
+  },
+  heading1: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  heading2: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  heading3: {
+    color: '#E2E8F0',
+    fontSize: 15,
+    fontWeight: '600',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  strong: {
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  em: {
+    fontStyle: 'italic',
+  },
+  link: {
+    color: colors.primary,
+    textDecorationLine: 'underline',
+  },
+  code_inline: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    color: '#F8FAFC',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    fontSize: 13,
+  },
+  code_block: {
+    backgroundColor: '#1E293B',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  fence: {
+    backgroundColor: '#1E293B',
+    color: '#F8FAFC',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+    fontSize: 13,
+  },
+  table: {
+    borderWidth: 1,
+    borderColor: '#334155',
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  tr: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  th: {
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontWeight: '700',
+    color: '#F8FAFC',
+    borderWidth: 0.5,
+    borderColor: '#334155',
+    justifyContent: 'center',
+  },
+  td: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: colors.agentBubbleText,
+    borderWidth: 0.5,
+    borderColor: '#334155',
+    justifyContent: 'center',
+  },
+  blockquote: {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginVertical: 8,
+    borderRadius: 4,
+  },
+  bullet_list: {
+    marginVertical: 4,
+  },
+  ordered_list: {
+    marginVertical: 4,
+  },
+  list_item: {
+    marginVertical: 2,
+  },
+};
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -113,13 +256,6 @@ const styles = StyleSheet.create({
   agentWrapper: {
     justifyContent: 'flex-start',
   },
-  agentAvatarImg: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    marginRight: 12,
-    marginTop: 2,
-  },
   bubble: {
     maxWidth: '85%',
   },
@@ -129,11 +265,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     borderBottomRightRadius: 4,
+    maxWidth: '85%',
   },
   agentBubble: {
     backgroundColor: 'transparent',
     paddingVertical: 2,
     paddingHorizontal: 4,
+    maxWidth: '100%',
+    flex: 1,
+  },
+  agentContentContainer: {
+    width: '100%',
   },
   toolsContainer: {
     marginBottom: 8,

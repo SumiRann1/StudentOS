@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, FlatList, StatusBar, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, FlatList, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { colors } from './src/theme/colors';
 import Header from './src/components/Header';
 import MessageItem from './src/components/MessageItem';
 import ChatInput from './src/components/ChatInput';
+import ClaudeLandingHero from './src/components/ClaudeLandingHero';
 import SetupModal from './src/components/SetupModal';
 import SidebarDrawer from './src/components/SidebarDrawer';
 import { streamAgentResponse } from './src/services/chatStream';
@@ -20,16 +21,8 @@ const generateUUID = () => {
   });
 };
 
-const INITIAL_WELCOME = {
-  id: 'welcome_1',
-  sender: 'agent',
-  text: '👋 Hi! I am your Student OS Assistant. How can I help with your Google Classroom, timetable, or student emails today?',
-  toolCalls: [],
-  isStreaming: false,
-};
-
 export default function App() {
-  const [messages, setMessages] = useState([INITIAL_WELCOME]);
+  const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
@@ -53,7 +46,7 @@ export default function App() {
   };
 
   const handleNewChat = () => {
-    setMessages([INITIAL_WELCOME]);
+    setMessages([]);
     setQuery('');
     setIsStreaming(false);
     threadIdRef.current = generateUUID();
@@ -67,10 +60,10 @@ export default function App() {
     }, 100);
   };
 
-  const handleSend = async () => {
-    if (!query.trim() || isStreaming) return;
+  const handleSend = async (textToSend) => {
+    const userText = (typeof textToSend === 'string' ? textToSend : query).trim();
+    if (!userText || isStreaming) return;
 
-    const userText = query.trim();
     setQuery('');
     
     const userMsgId = generateUUID();
@@ -159,42 +152,51 @@ export default function App() {
     });
   };
 
+  const firstUserMsg = messages.find((m) => m.sender === 'user');
+  const chatTopic = firstUserMsg ? firstUserMsg.text : 'Student OS';
+
   return (
     <View style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-      {/* Header */}
+      {/* Header with Dynamic Topic */}
       <Header
+        chatTopic={chatTopic}
         isOnline={isOnline}
         onOpenSetup={() => setIsSetupVisible(true)}
         onNewChat={handleNewChat}
         onOpenDrawer={() => setIsDrawerVisible(true)}
       />
 
-      {/* Main Chat Stream */}
+      {/* Main Content Area */}
       <KeyboardAvoidingView
         style={styles.chatContainer}
         behavior={Platform.select({ ios: 'padding', android: 'height', default: undefined })}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <MessageItem message={item} />}
-          contentContainerStyle={styles.messageList}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          onContentSizeChange={scrollToBottom}
-        />
+        {messages.length === 0 ? (
+          <ClaudeLandingHero onSelectPrompt={(promptText) => handleSend(promptText)} />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <MessageItem message={item} />}
+            contentContainerStyle={styles.messageList}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            onContentSizeChange={scrollToBottom}
+          />
+        )}
 
-        {/* Input Bar & Suggestion Chips */}
+        {/* Input Bar */}
         <ChatInput
           query={query}
           setQuery={setQuery}
-          onSend={handleSend}
+          onSend={() => handleSend()}
           disabled={isStreaming}
           onFocus={scrollToBottom}
+          showChips={messages.length > 0}
         />
       </KeyboardAvoidingView>
 

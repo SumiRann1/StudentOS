@@ -1,32 +1,22 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, StatusBar, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
 
-export default function Header({ onNewChat, onOpenDrawer }) {
+export default function Header({ onOpenDrawer, chatTopic = 'Student OS' }) {
   return (
     <View style={styles.header}>
-      {/* Left Section: Burger Drawer Button & Model Selector Pill */}
       <View style={styles.leftSection}>
+        {/* Top-Left Minimal Burger Button */}
         {onOpenDrawer && (
-          <TouchableOpacity style={styles.iconTile} onPress={onOpenDrawer} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.iconButton} onPress={onOpenDrawer} activeOpacity={0.7}>
             <Text style={styles.burgerIcon}>☰</Text>
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.modelPill} onPress={onOpenDrawer} activeOpacity={0.8}>
-          <Image source={require('../../assets/app-logo.png')} style={styles.logoImg} />
-          <Text style={styles.modelTitle}>Student OS</Text>
-          <Text style={styles.chevronIcon}>💭</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Right Section: New Chat Action Tile */}
-      <View style={styles.rightSection}>
-        {onNewChat && (
-          <TouchableOpacity style={styles.iconTile} onPress={onNewChat} activeOpacity={0.7}>
-            <Text style={styles.newChatIcon}></Text>
-          </TouchableOpacity>
-        )}
+        {/* Dynamic Chat Topic Title */}
+        <Text style={styles.chatTopicText} numberOfLines={1} ellipsizeMode="tail">
+          {chatTopic}
+        </Text>
       </View>
     </View>
   );
@@ -39,18 +29,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 8 : 30) : 10,
-    paddingBottom: 10,
-    backgroundColor: colors.background,
-    borderBottomWidth: 1,
-    borderBottomColor: '#262626',
+    paddingTop: 6,
+    paddingBottom: 4,
+    backgroundColor: 'transparent',
   },
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    flex: 1,
+    gap: 12,
+    marginRight: 16,
   },
-  iconTile: {
+  iconButton: {
     width: 36,
     height: 36,
     borderRadius: 10,
@@ -62,62 +52,14 @@ const styles = StyleSheet.create({
   },
   burgerIcon: {
     color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modelPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.cardBackground,
-    paddingLeft: 6,
-    paddingRight: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-  },
-  logoImg: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  sparkleBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: 'rgba(16, 163, 127, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  sparkleIcon: {
-    fontSize: 11,
-  },
-  modelTitle: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-    marginRight: 4,
-  },
-  modelBadge: {
-    color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 18,
     fontWeight: '500',
-    marginRight: 6,
   },
-  chevronIcon: {
-    color: colors.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-    marginTop: 1,
-  },
-  rightSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  newChatIcon: {
+  chatTopicText: {
+    color: colors.textPrimary,
     fontSize: 15,
+    fontWeight: '600',
+    flex: 1,
+    letterSpacing: -0.2,
   },
 });
