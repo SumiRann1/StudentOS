@@ -1,7 +1,0 @@
-[project]
-name = "student-os"
-version = "1.0.0"
-description = "Student OS v3 Agent API"
-
-[tool.vercel]
-entrypoint = "FastAPI.main:app"
