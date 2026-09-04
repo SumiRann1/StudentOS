@@ -28,6 +28,10 @@ async def generate_agent_stream(state: dict, config: dict):
         async for event in agent.astream_events(state, config=config, version="v2"):
             kind = event.get("event")
             name = event.get("name", "")
+            node = event.get("metadata", {}).get("langgraph_node", "")
+
+            if node == "preprocessor":
+                continue
 
             if kind == "on_chat_model_stream":
                 chunk = event["data"]["chunk"]

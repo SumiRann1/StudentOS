@@ -20,8 +20,7 @@ def preprocessor(state: AgentState) -> dict:
                 "type": ["end"],
                 "current_day": current_day,
                 "current_date": current_date,
-                "current_time": current_time,
-                "messages": existing_messages
+                "current_time": current_time
             }
 
     router_prompt = get_router_prompt(current_day, current_date, current_time)
@@ -48,8 +47,7 @@ def preprocessor(state: AgentState) -> dict:
         "type": agent_type,
         "current_day": current_day,
         "current_date": current_date,
-        "current_time": current_time,
-        "messages": existing_messages
+        "current_time": current_time
     }
 
 

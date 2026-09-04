@@ -16,7 +16,7 @@ def route_decision(state: AgentState):
     if not types:
         return "general"
     last_type = types[-1] if isinstance(types, list) else types
-    if last_type == "end" or "end" in types:
+    if last_type == "end":
         return "end"
     return last_type if last_type in ["classroom", "email", "timetable", "general"] else "general"
 

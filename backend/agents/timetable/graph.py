@@ -26,6 +26,6 @@ def build_timetable_graph(state) -> StateGraph:
     
     workflow.add_edge("tool_node", "chat_node")
 
-    return workflow.compile(checkpointer=MemorySaver())
+    return workflow.compile()
 
 

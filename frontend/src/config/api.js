@@ -6,10 +6,10 @@ export const DEV_HOST_IP = '10.95.135.38';
 export const DEV_PORT = '8000';
 
 export const getApiBaseUrl = () => {
-  // If explicitly provided via environment variable
-  // if (process.env.EXPO_PUBLIC_API_URL) {
-  //   return process.env.EXPO_PUBLIC_API_URL;
-  // }
+  //If explicitly provided via environment variable
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
 
   // On Web browser, localhost connects directly to the host machine
   if (Platform.OS === 'web') {
