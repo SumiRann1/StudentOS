@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Platform, StatusBar } from 'react-native';
 import { colors } from '../theme/colors';
-import { fetchSetupStatus, saveSetupData } from '../services/setupApi';
+import { fetchSetupStatus, saveSetupData, triggerServiceAuth } from '../services/setupApi';
 
 export default function SetupModal({ visible, onClose }) {
   const [status, setStatus] = useState(null);
@@ -22,6 +22,23 @@ export default function SetupModal({ visible, onClose }) {
     const data = await fetchSetupStatus();
     setStatus(data);
     setLoading(false);
+  };
+
+  const handleAuthenticate = async () => {
+    setFeedback(null);
+    setLoading(true);
+    try {
+      const res = await triggerServiceAuth(selectedService);
+      setFeedback({
+        type: res.success ? 'success' : 'error',
+        message: res.message,
+      });
+      await loadStatus();
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Authentication trigger failed' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -99,7 +116,7 @@ export default function SetupModal({ visible, onClose }) {
             )}
 
             {/* Service Selector */}
-            <Text style={styles.sectionHeader}>Configure OAuth Files</Text>
+            <Text style={styles.sectionHeader}>Configure & Authenticate</Text>
             <View style={styles.serviceSelector}>
               <TouchableOpacity
                 style={[styles.serviceTab, selectedService === 'classroom' && styles.serviceTabActive]}
@@ -119,6 +136,18 @@ export default function SetupModal({ visible, onClose }) {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Interactive OAuth trigger button */}
+            <TouchableOpacity style={styles.authBtn} onPress={handleAuthenticate} disabled={loading}>
+              <Text style={styles.authBtnText}>
+                🔑 Verify / Authenticate {selectedService === 'classroom' ? 'Classroom' : 'Email'}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={styles.helpText}>
+              Alternatively, run in terminal:{' '}
+              <Text style={styles.codeText}>python scripts/authenticate_oauth.py --service {selectedService}</Text>
+            </Text>
 
             {/* Input fields */}
             <Text style={styles.inputLabel}>Credentials JSON:</Text>
@@ -295,4 +324,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
+  authBtn: {
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  authBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  helpText: {
+    color: colors.textMuted,
+    fontSize: 10,
+    marginBottom: 12,
+  },
+  codeText: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: colors.secondary,
+  },
 });
+

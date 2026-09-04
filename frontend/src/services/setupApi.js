@@ -43,3 +43,27 @@ export async function saveSetupData(service, credentials, token) {
     throw error;
   }
 }
+
+/**
+ * Trigger OAuth authentication or verification for a service.
+ */
+export async function triggerServiceAuth(service) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/setup/auth/${service}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to authenticate service');
+    }
+    return await res.json();
+  } catch (error) {
+    console.error('Error authenticating service:', error);
+    throw error;
+  }
+}
+

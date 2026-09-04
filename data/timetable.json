@@ -262,6 +262,15 @@
         "instructor": ""
       },
       {
+        "time": "13:30 - 14:30",
+        "courseKey": "LUNCH",
+        "courseCode": "LUNCH",
+        "courseName": "Lunch Break",
+        "type": "BREAK",
+        "venue": "Dining Hall / Mess",
+        "instructor": ""
+      },
+      {
         "time": "14:30 - 15:30",
         "courseKey": null,
         "courseCode": "No Class",
@@ -403,6 +412,15 @@
         "instructor": "Dr. Sruthi Vinayan, Dr. Ritika Verma, Dr. Anubhav Pradhan"
       },
       {
+        "time": "13:30 - 14:30",
+        "courseKey": "LUNCH",
+        "courseCode": "LUNCH",
+        "courseName": "Lunch Break",
+        "type": "BREAK",
+        "venue": "Dining Hall / Mess",
+        "instructor": ""
+      },
+      {
         "time": "14:30 - 15:30",
         "courseKey": null,
         "courseCode": "No Class",
@@ -471,6 +489,15 @@
         "type": "LECTURE",
         "venue": "SD2 202,203 / L201,202",
         "instructor": "Dr. Anubhav Pradhan / Dr. Eslavath Rajkumar"
+      },
+      {
+        "time": "13:30 - 14:30",
+        "courseKey": "LUNCH",
+        "courseCode": "LUNCH",
+        "courseName": "Lunch Break",
+        "type": "BREAK",
+        "venue": "Dining Hall / Mess",
+        "instructor": ""
       },
       {
         "time": "14:30 - 15:30",
@@ -543,6 +570,15 @@
         "type": "TUTORIAL",
         "venue": "201, 202",
         "instructor": "Dr. Lakshmi Kanta Patra"
+      },
+      {
+        "time": "13:30 - 14:30",
+        "courseKey": "LUNCH",
+        "courseCode": "LUNCH",
+        "courseName": "Lunch Break",
+        "type": "BREAK",
+        "venue": "Dining Hall / Mess",
+        "instructor": ""
       },
       {
         "time": "14:30 - 15:30",

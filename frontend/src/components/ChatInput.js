@@ -3,53 +3,65 @@ import { View, TextInput, TouchableOpacity, Text, ScrollView, StyleSheet } from 
 import { colors } from '../theme/colors';
 
 const PROMPT_SUGGESTIONS = [
-  '📅 What is on my timetable for today?',
-  '📚 List my Google Classroom assignments',
-  '✉️ Check unread student emails',
-  '📝 Help me plan my study schedule',
+  { icon: '📅', text: 'What is on my timetable today?' },
+  { icon: '📚', text: 'List my Google Classroom assignments' },
+  { icon: '✉️', text: 'Check unread student emails' },
+  { icon: '📝', text: 'Help me plan my study schedule' },
 ];
 
-export default function ChatInput({ query, setQuery, onSend, disabled }) {
+export default function ChatInput({ query, setQuery, onSend, disabled, onFocus }) {
+  const canSend = query.trim().length > 0 && !disabled;
+
   return (
     <View style={styles.container}>
-      {/* Quick Prompt Suggestion Chips */}
+      {/* Quick Suggestion Chips */}
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={styles.chipsContainer}
       >
-        {PROMPT_SUGGESTIONS.map((prompt, idx) => (
+        {PROMPT_SUGGESTIONS.map((item, idx) => (
           <TouchableOpacity
             key={idx}
             style={styles.chip}
-            onPress={() => setQuery(prompt.replace(/^[^\s]+\s/, ''))}
+            onPress={() => setQuery(item.text)}
             disabled={disabled}
           >
-            <Text style={styles.chipText}>{prompt}</Text>
+            <Text style={styles.chipIcon}>{item.icon}</Text>
+            <Text style={styles.chipText}>{item.text}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      {/* Input Bar */}
-      <View style={styles.inputBar}>
+      {/* Floating Pill Input Bar (ChatGPT Style) */}
+      <View style={styles.pillContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Ask Student OS anything..."
+          placeholder="Message Student OS..."
           placeholderTextColor={colors.textMuted}
           value={query}
           onChangeText={setQuery}
+          onFocus={onFocus}
           multiline
           maxLength={1000}
           editable={!disabled}
         />
+
         <TouchableOpacity
-          style={[styles.sendButton, (!query.trim() || disabled) && styles.sendButtonDisabled]}
+          style={[styles.sendButton, canSend ? styles.sendButtonActive : styles.sendButtonDisabled]}
           onPress={onSend}
-          disabled={!query.trim() || disabled}
+          disabled={!canSend}
         >
-          <Text style={styles.sendButtonText}>Send ➔</Text>
+          <Text style={[styles.sendIcon, canSend ? styles.sendIconActive : styles.sendIconDisabled]}>
+            ↑
+          </Text>
         </TouchableOpacity>
       </View>
+
+      {/* ChatGPT Style Disclaimer Footer */}
+      <Text style={styles.disclaimerText}>
+        Student OS can make mistakes. Verify important academic info.
+      </Text>
     </View>
   );
 }
@@ -57,65 +69,87 @@ export default function ChatInput({ query, setQuery, onSend, disabled }) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: colors.cardBackground,
-    borderTopWidth: 1,
-    borderTopColor: colors.cardBorder,
-    paddingTop: 8,
-    paddingBottom: 16,
+    backgroundColor: colors.background,
+    paddingTop: 6,
+    paddingBottom: 10,
+    alignItems: 'center',
   },
   chipsContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
     gap: 8,
   },
   chip: {
-    backgroundColor: colors.background,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.cardBackground,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.cardBorder,
     marginRight: 6,
   },
+  chipIcon: {
+    fontSize: 13,
+    marginRight: 6,
+  },
   chipText: {
     color: colors.textSecondary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
   },
-  inputBar: {
-    width: '100%',
+  pillContainer: {
+    width: '92%',
+    maxWidth: 800,
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    gap: 8,
+    alignItems: 'flex-end',
+    backgroundColor: colors.cardBackground,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    minHeight: 52,
   },
   input: {
     flex: 1,
-    backgroundColor: colors.background,
     color: colors.textPrimary,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    maxHeight: 100,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    fontSize: 15,
+    maxHeight: 120,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingRight: 10,
   },
   sendButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 6,
+  },
+  sendButtonActive: {
+    backgroundColor: '#FFFFFF',
   },
   sendButtonDisabled: {
-    backgroundColor: colors.cardBorder,
-    opacity: 0.6,
+    backgroundColor: '#343541',
   },
-  sendButtonText: {
-    color: '#FFFFFF',
+  sendIcon: {
+    fontSize: 18,
     fontWeight: '700',
-    fontSize: 13,
+    marginTop: -2,
+  },
+  sendIconActive: {
+    color: '#000000',
+  },
+  sendIconDisabled: {
+    color: '#676767',
+  },
+  disclaimerText: {
+    color: colors.textMuted,
+    fontSize: 11,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });

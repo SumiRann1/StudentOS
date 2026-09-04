@@ -1,9 +1,13 @@
 import os
+import json
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
+
 from langchain_core.tools import tool
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -50,6 +54,9 @@ def get_classroom_service():
         if creds and creds.expired and creds.refresh_token:
             try:
                 creds.refresh(Request())
+                if os.path.exists(TOKEN_PATH):
+                    with open(TOKEN_PATH, "w", encoding="utf-8") as f:
+                        f.write(creds.to_json())
             except Exception:
                 creds = None
 
@@ -67,7 +74,7 @@ def get_classroom_service():
                     "Please upload classroom_oauth_token.json via the app Setup menu."
                 )
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
-            creds = flow.run_local_server(port=0)
+            creds = flow.run_local_server(port=0, prompt="consent", access_type="offline")
 
             os.makedirs(os.path.dirname(TOKEN_PATH), exist_ok=True)
             with open(TOKEN_PATH, "w", encoding="utf-8") as token_file:

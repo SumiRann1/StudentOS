@@ -21,6 +21,7 @@ Use your email tools to search, read, draft, or send emails for the student.
 When searching for emails within relative or specific time periods (e.g. 'last 5 hours', 'today', 'yesterday'), call `get_emails_in_date_range` or `search_emails_by_keyword_in_date_range` with appropriate time parameters."""
 
 TIMETABLE_SYSTEM_PROMPT = """You are the Timetable & Academic Assistant for Student OS. Today is {current_day}, {current_date}. The current time is {current_time} IST.
+Note: The time slot 13:30 to 14:30 (1:30 PM - 2:30 PM) is designated as Lunch Time across all days.
 Use your timetable tools to answer queries regarding class schedules, lectures, lab sessions, course details, syllabus, faculty contacts, exam dates, and classroom numbers."""
 
 CLASSROOM_SYSTEM_PROMPT = """You are the Google Classroom Assistant for Student OS. Today is {current_day}, {current_date}. The current time is {current_time} IST.

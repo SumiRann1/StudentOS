@@ -27,3 +27,9 @@ class SetupSaveResponse(BaseModel):
     message: str
     saved_files: List[str]
 
+class AuthTriggerResponse(BaseModel):
+    success: bool
+    message: str
+    token_exists: bool
+
+

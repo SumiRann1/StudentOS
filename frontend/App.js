@@ -1,30 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, FlatList, SafeAreaView, StatusBar, KeyboardAvoidingView, Platform, Text } from 'react-native';
+import { StyleSheet, View, FlatList, StatusBar, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from 'react-native';
 import { colors } from './src/theme/colors';
 import Header from './src/components/Header';
 import MessageItem from './src/components/MessageItem';
 import ChatInput from './src/components/ChatInput';
 import SetupModal from './src/components/SetupModal';
+import SidebarDrawer from './src/components/SidebarDrawer';
 import { streamAgentResponse } from './src/services/chatStream';
 import { fetchSetupStatus } from './src/services/setupApi';
 
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
+const INITIAL_WELCOME = {
+  id: 'welcome_1',
+  sender: 'agent',
+  text: '👋 Hi! I am your Student OS Assistant. How can I help with your Google Classroom, timetable, or student emails today?',
+  toolCalls: [],
+  isStreaming: false,
+};
+
 export default function App() {
-  const [messages, setMessages] = useState([
-    {
-      id: 'welcome_1',
-      sender: 'agent',
-      text: '👋 Hi! I am your Student OS Assistant. I can help manage your Google Classroom assignments, timetable, and student emails. What would you like to check today?',
-      toolCalls: [],
-      isStreaming: false,
-    },
-  ]);
+  const [messages, setMessages] = useState([INITIAL_WELCOME]);
   const [query, setQuery] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [isSetupVisible, setIsSetupVisible] = useState(false);
+  const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   
   const flatListRef = useRef(null);
-  const threadIdRef = useRef(`thread_${Date.now()}`);
+  const threadIdRef = useRef(generateUUID());
 
   useEffect(() => {
     checkServerHealth();
@@ -37,6 +50,13 @@ export default function App() {
     } else {
       setIsOnline(false);
     }
+  };
+
+  const handleNewChat = () => {
+    setMessages([INITIAL_WELCOME]);
+    setQuery('');
+    setIsStreaming(false);
+    threadIdRef.current = generateUUID();
   };
 
   const scrollToBottom = () => {
@@ -53,8 +73,8 @@ export default function App() {
     const userText = query.trim();
     setQuery('');
     
-    const userMsgId = `msg_${Date.now()}_user`;
-    const agentMsgId = `msg_${Date.now()}_agent`;
+    const userMsgId = generateUUID();
+    const agentMsgId = generateUUID();
 
     const newMessages = [
       ...messages,
@@ -140,19 +160,22 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.cardBackground} />
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Header */}
       <Header
         isOnline={isOnline}
         onOpenSetup={() => setIsSetupVisible(true)}
+        onNewChat={handleNewChat}
+        onOpenDrawer={() => setIsDrawerVisible(true)}
       />
 
-      {/* Main Chat Stream Container */}
+      {/* Main Chat Stream */}
       <KeyboardAvoidingView
         style={styles.chatContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.select({ ios: 'padding', android: 'height', default: undefined })}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <FlatList
           ref={flatListRef}
@@ -160,6 +183,8 @@ export default function App() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <MessageItem message={item} />}
           contentContainerStyle={styles.messageList}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           onContentSizeChange={scrollToBottom}
         />
 
@@ -169,8 +194,18 @@ export default function App() {
           setQuery={setQuery}
           onSend={handleSend}
           disabled={isStreaming}
+          onFocus={scrollToBottom}
         />
       </KeyboardAvoidingView>
+
+      {/* ChatGPT Style Burger Menu Sidebar */}
+      <SidebarDrawer
+        visible={isDrawerVisible}
+        onClose={() => setIsDrawerVisible(false)}
+        isOnline={isOnline}
+        onNewChat={handleNewChat}
+        onOpenSetup={() => setIsSetupVisible(true)}
+      />
 
       {/* Credentials & Service Setup Modal */}
       <SetupModal
@@ -180,7 +215,7 @@ export default function App() {
           checkServerHealth();
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -189,7 +224,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     backgroundColor: colors.background,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 6 : 36) : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 4 : 28) : 0,
   },
   chatContainer: {
     flex: 1,
@@ -197,6 +232,6 @@ const styles = StyleSheet.create({
   },
   messageList: {
     width: '100%',
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
 });

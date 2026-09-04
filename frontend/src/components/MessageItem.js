@@ -1,119 +1,163 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated, Image } from 'react-native';
 import { colors } from '../theme/colors';
+
+// Animated Blinking Cursor Component (ChatGPT Style)
+function BlinkingCursor() {
+  const cursorOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(cursorOpacity, {
+          toValue: 0.15,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cursorOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [cursorOpacity]);
+
+  return (
+    <Animated.Text style={[styles.cursorText, { opacity: cursorOpacity }]}>
+      {' ▋'}
+    </Animated.Text>
+  );
+}
+
+// Animated Pulsing Thinking Indicator
+function ThinkingIndicator() {
+  const pulseOpacity = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseOpacity, {
+          toValue: 0.3,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [pulseOpacity]);
+
+  return (
+    <View style={styles.thinkingRow}>
+      <Animated.View style={[styles.thinkingDot, { opacity: pulseOpacity }]} />
+      <Text style={styles.thinkingText}>Thinking...</Text>
+    </View>
+  );
+}
 
 export default function MessageItem({ message }) {
   const isUser = message.sender === 'user';
+  const isThinking = message.isStreaming && !message.text;
 
   return (
-    <View style={[styles.container, isUser ? styles.userContainer : styles.agentContainer]}>
+    <View style={[styles.wrapper, isUser ? styles.userWrapper : styles.agentWrapper]}>
       {!isUser && (
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>🤖</Text>
-        </View>
+        <Image source={require('../../assets/app-logo.png')} style={styles.agentAvatarImg} />
       )}
 
       <View style={[styles.bubble, isUser ? styles.userBubble : styles.agentBubble]}>
-        {/* Render tool call execution status badge if agent invoked a tool */}
+        {/* Render tool call execution status badges */}
         {message.toolCalls && message.toolCalls.length > 0 && (
           <View style={styles.toolsContainer}>
             {message.toolCalls.map((tool, idx) => (
               <View key={idx} style={styles.toolBadge}>
-                <Text style={styles.toolText}>⚡ Executing: {tool.name}</Text>
+                <Text style={styles.toolText}>⚡ {tool.name}</Text>
               </View>
             ))}
           </View>
         )}
 
-        <Text style={[styles.messageText, isUser ? styles.userText : styles.agentText]}>
-          {message.text || (message.isStreaming ? 'Thinking...' : '')}
-        </Text>
-
-        {message.isStreaming && (
-          <Text style={styles.cursorText}>▌</Text>
+        {/* Message Content or Thinking State */}
+        {isThinking ? (
+          <ThinkingIndicator />
+        ) : (
+          <Text style={[styles.messageText, isUser ? styles.userText : styles.agentText]}>
+            {message.text}
+            {message.isStreaming && <BlinkingCursor />}
+          </Text>
         )}
       </View>
-
-      {isUser && (
-        <View style={[styles.avatar, styles.userAvatar]}>
-          <Text style={styles.avatarText}>👤</Text>
-        </View>
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     width: '100%',
     flexDirection: 'row',
-    marginVertical: 6,
-    paddingHorizontal: 12,
-    alignItems: 'flex-end',
+    marginVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'flex-start',
   },
-  userContainer: {
+  userWrapper: {
     justifyContent: 'flex-end',
   },
-  agentContainer: {
+  agentWrapper: {
     justifyContent: 'flex-start',
   },
-  avatar: {
+  agentAvatarImg: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.cardBackground,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-  },
-  userAvatar: {
-    marginRight: 0,
-    marginLeft: 8,
-    backgroundColor: colors.primaryGlow,
-  },
-  avatarText: {
-    fontSize: 16,
+    borderRadius: 8,
+    marginRight: 12,
+    marginTop: 2,
   },
   bubble: {
-    maxWidth: '82%',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    maxWidth: '85%',
   },
   userBubble: {
     backgroundColor: colors.userBubble,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
     borderBottomRightRadius: 4,
   },
   agentBubble: {
-    backgroundColor: colors.agentBubble,
-    borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    backgroundColor: 'transparent',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
   toolsContainer: {
-    marginBottom: 6,
+    marginBottom: 8,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
+    gap: 6,
   },
   toolBadge: {
     backgroundColor: colors.toolBadgeBg,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.toolBadgeBorder,
   },
   toolText: {
     color: colors.toolBadgeText,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
   },
   messageText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 24,
+    letterSpacing: 0.2,
   },
   userText: {
     color: colors.userBubbleText,
@@ -123,7 +167,24 @@ const styles = StyleSheet.create({
   },
   cursorText: {
     color: colors.primary,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  thinkingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  thinkingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+    marginRight: 8,
+  },
+  thinkingText: {
+    color: colors.textMuted,
     fontSize: 14,
-    marginTop: 2,
+    fontStyle: 'italic',
   },
 });

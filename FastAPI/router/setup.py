@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, FileResponse
 
-from .schema import SetupStatusResponse, ServiceStatus, SetupSaveRequest, SetupSaveResponse
+from .schema import SetupStatusResponse, ServiceStatus, SetupSaveRequest, SetupSaveResponse, AuthTriggerResponse
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -28,11 +28,6 @@ def save_json_file(file_path: str, data: Dict[str, Any]):
 
 setup_route = APIRouter(prefix="/setup", tags=["Setup"])
 
-@setup_route.get("", response_class=HTMLResponse)
-@setup_route.get("/", response_class=HTMLResponse)
-async def get_setup_page():
-    pass
-
 @setup_route.get("/status", response_model=SetupStatusResponse)
 async def get_setup_status():
     """ Check status of credentials and token files for Classroom and Email services. """
@@ -46,6 +41,43 @@ async def get_setup_status():
             token_exists=os.path.exists(SERVICE_FILE_MAP["email"]["token"])
         )
     )
+
+@setup_route.post("/auth/{service}", response_model=AuthTriggerResponse)
+async def trigger_auth(service: str):
+    """ Trigger or verify OAuth authentication for Classroom or Email service. """
+    if service not in SERVICE_FILE_MAP:
+        raise HTTPException(status_code=400, detail=f"Invalid service '{service}'. Must be 'classroom' or 'email'.")
+    
+    creds_path = SERVICE_FILE_MAP[service]["credentials"]
+    token_path = SERVICE_FILE_MAP[service]["token"]
+    
+    if not os.path.exists(creds_path):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Credentials file missing for '{service}'. Please upload or save {os.path.basename(creds_path)} first."
+        )
+        
+    try:
+        if service == "classroom":
+            from backend.agents.classroom.tool import get_classroom_service
+            get_classroom_service()
+        else:
+            from backend.agents.email.tool import get_gmail_service
+            get_gmail_service()
+            
+        token_exists = os.path.exists(token_path)
+        return AuthTriggerResponse(
+            success=True,
+            message=f"Successfully authenticated '{service}' service! Token is active.",
+            token_exists=token_exists
+        )
+    except Exception as e:
+        token_exists = os.path.exists(token_path)
+        return AuthTriggerResponse(
+            success=False,
+            message=f"Authentication required for '{service}': {str(e)}. You can also run 'python scripts/authenticate_oauth.py --service {service}' in terminal.",
+            token_exists=token_exists
+        )
 
 @setup_route.post("/save", response_model=SetupSaveResponse)
 async def save_setup_data(req: SetupSaveRequest):
@@ -97,6 +129,7 @@ async def upload_setup_file(service: str, file_type: str = Form(...), file: Uplo
         message=f"Successfully uploaded and saved {file_type} file '{filename}' for service '{service}'.",
         saved_files=[filename]
     )
+
 
 
 
