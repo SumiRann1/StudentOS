@@ -32,4 +32,5 @@ class AuthTriggerResponse(BaseModel):
     message: str
     token_exists: bool
 
+    
 

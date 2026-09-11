@@ -1,8 +1,25 @@
 import os
 import json
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
+
+IST = ZoneInfo("Asia/Kolkata")
+
+def fmt_due(due_date, due_time=None):
+    """Simple helper to format Classroom due dates to IST."""
+    if not due_date:
+        return ""
+    y = due_date.get("year")
+    m = due_date.get("month", 1)
+    d = due_date.get("day", 1)
+    hh = due_time.get("hours", 0) if due_time else 0
+    mm = due_time.get("minutes", 0) if due_time else 0
+    try:
+        dt = datetime(y, m, d, hh, mm, tzinfo=timezone.utc).astimezone(IST)
+        return dt.strftime("%Y-%m-%d %I:%M %p")
+    except Exception:
+        return f"{y}-{m:02d}-{d:02d}"
 
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 
@@ -193,16 +210,12 @@ def list_coursework(course_id_or_name: str = "", query: str = "", max_results: i
                     due_date = item.get("dueDate", {})
                     due_time = item.get("dueTime", {})
 
-                    due_date_str = f"{due_date.get('year', '')}-{due_date.get('month', 0):02d}-{due_date.get('day', 0):02d}" if due_date else ""
-                    due_time_str = f"{due_time.get('hours', 0):02d}:{due_time.get('minutes', 0):02d}" if due_time else ""
-
                     all_coursework.append({
                         "id": item.get("id"),
                         "courseId": cid,
                         "title": title,
                         "description": desc[:300],
-                        "dueDate": due_date_str,
-                        "dueTime": due_time_str,
+                        "due": fmt_due(due_date, due_time),
                         "maxPoints": item.get("maxPoints"),
                         "state": item.get("state"),
                         "workType": item.get("workType"),
@@ -256,17 +269,12 @@ def get_upcoming_assignments(course_id_or_name: str = "", max_results: int = 10)
                         subs = subs_res.get("studentSubmissions", [])
                         sub_state = subs[0].get("state") if subs else "NEW"
 
-                        due_date_str = f"{due.get('year')}-{due.get('month'):02d}-{due.get('day'):02d}"
-                        due_time = cw.get("dueTime", {})
-                        due_time_str = f"{due_time.get('hours', 0):02d}:{due_time.get('minutes', 0):02d}" if due_time else ""
-
                         upcoming.append({
                             "id": cw["id"],
                             "courseId": cid,
                             "courseName": cname,
                             "title": cw.get("title", ""),
-                            "dueDate": due_date_str,
-                            "dueTime": due_time_str,
+                            "due": fmt_due(due, cw.get("dueTime", {})),
                             "dueInt": due_int,
                             "submissionState": sub_state,
                             "alternateLink": cw.get("alternateLink", "")
@@ -399,19 +407,13 @@ def get_assignment_details(course_id_or_name: str, coursework_id_or_title: str) 
         except Exception:
             pass
 
-        due = matched_cw.get("dueDate", {})
-        due_date_str = f"{due.get('year')}-{due.get('month'):02d}-{due.get('day'):02d}" if due else ""
-        due_time = matched_cw.get("dueTime", {})
-        due_time_str = f"{due_time.get('hours', 0):02d}:{due_time.get('minutes', 0):02d}" if due_time else ""
-
         return {
             "success": True,
             "id": matched_cw.get("id"),
             "courseId": target_cid,
             "title": matched_cw.get("title", ""),
             "description": matched_cw.get("description", ""),
-            "dueDate": due_date_str,
-            "dueTime": due_time_str,
+            "due": fmt_due(matched_cw.get("dueDate", {}), matched_cw.get("dueTime", {})),
             "maxPoints": matched_cw.get("maxPoints"),
             "alternateLink": matched_cw.get("alternateLink", ""),
             "submission": submission_info

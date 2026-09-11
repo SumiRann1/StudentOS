@@ -1,4 +1,4 @@
-# 🎓 Student OS v3.6
+# 🎓 Student OS v4
 
 > **An LLM-Powered Autonomous Agent System for Managing Academic Timetables, Google Classroom, and Student Emails.**
 
@@ -25,7 +25,7 @@
 ## ✨ Features & Capabilities
 
 - 🎨 **ChatGPT-Inspired Dark UI/UX**:
-  - Glassmorphic header with Student OS model selector pill (`✨ Student OS 3.6`) and custom branding logo.
+  - Glassmorphic header with Student OS model selector pill (`✨ Student OS 4`) and custom branding logo.
   - Interactive **Burger Menu Drawer** (`☰`) for fast navigation, session management, and live server health status.
   - **Animated Token Streaming Cursor (`▋`)** and pulsing thinking indicator.
   - Floating pill input bar (`border-radius: 26px`) with circular send button (`↑`), prompt suggestions, and disclaimer footer.

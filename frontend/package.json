@@ -1,8 +1,8 @@
 {
   "name": "student-os-frontend",
-  "description": "Student OS v3 React Native Frontend",
+  "description": "Student OS v4 React Native Frontend",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "main": "index.js",
   "dependencies": {
     "@expo/metro-runtime": "~57.0.0",

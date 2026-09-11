@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 import logging
 from FastAPI.router.chat import chat_router
 from FastAPI.router.setup import setup_route
+from FastAPI.router.auth.auth import auth_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,13 +24,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
 app.include_router(chat_router)
 app.include_router(setup_route)
-
+app.include_router(auth_router)
 
 @app.get("/")
 async def root():

@@ -1,8 +1,19 @@
 import os
 import base64
+import email.utils
 from email.message import EmailMessage
 from typing import Optional, List, Dict, Any
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import json
+
+def format_email_date(raw_date_str: str) -> str:
+    """Converts email raw date header to Asia/Kolkata IST string."""
+    try:
+        dt = email.utils.parsedate_to_datetime(raw_date_str)
+        return dt.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %I:%M %p")
+    except Exception:
+        return str(raw_date_str or "")
 
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 
@@ -129,7 +140,8 @@ def search_emails(query: str = "is:unread", max_results: int = 5) -> dict:
 
             subject = headers_dict.get("subject", "(No Subject)")
             sender = headers_dict.get("from", "Unknown")
-            date = headers_dict.get("date", "")
+            raw_date = headers_dict.get("date", "")
+            date = format_email_date(raw_date)
             recipient = headers_dict.get("to", "")
             snippet = msg.get("snippet", "")
             body = parse_email_body(payload)
@@ -175,12 +187,13 @@ def read_email(message_id: str) -> dict:
             "from": headers.get("from", ""),
             "to": headers.get("to", ""),
             "subject": headers.get("subject", ""),
-            "date": headers.get("date", ""),
+            "date": format_email_date(headers.get("date", "")),
             "labels": msg.get("labelIds", []),
             "body": body[:1500] if body else ""
         }
     except Exception as e:
         return {"success": False, "message": f"Failed to read email '{message_id}': {str(e)}"}
+
 
 
 @tool
@@ -367,7 +380,7 @@ def get_emails_in_date_range(start_date: str, end_date: str = "", query: str = "
                 "from": headers.get("from", "Unknown"),
                 "to": headers.get("to", ""),
                 "subject": headers.get("subject", "(No Subject)"),
-                "date": headers.get("date", ""),
+                "date": format_email_date(headers.get("date", "")),
                 "snippet": msg.get("snippet", ""),
                 "body": body[:500] if body else msg.get("snippet", "")
             })
@@ -417,7 +430,7 @@ def search_emails_by_keyword(keyword: str, max_results: int = 5) -> dict:
                 "from": headers.get("from", "Unknown"),
                 "to": headers.get("to", ""),
                 "subject": headers.get("subject", "(No Subject)"),
-                "date": headers.get("date", ""),
+                "date": format_email_date(headers.get("date", "")),
                 "snippet": msg.get("snippet", ""),
                 "body": body[:500] if body else msg.get("snippet", "")
             })

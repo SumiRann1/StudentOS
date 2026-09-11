@@ -31,14 +31,20 @@ setup_route = APIRouter(prefix="/setup", tags=["Setup"])
 @setup_route.get("/status", response_model=SetupStatusResponse)
 async def get_setup_status():
     """ Check status of credentials and token files for Classroom and Email services. """
+    classroom_token = os.path.exists(SERVICE_FILE_MAP["classroom"]["token"])
+    classroom_creds = os.path.exists(SERVICE_FILE_MAP["classroom"]["credentials"]) or classroom_token
+
+    email_token = os.path.exists(SERVICE_FILE_MAP["email"]["token"])
+    email_creds = os.path.exists(SERVICE_FILE_MAP["email"]["credentials"]) or email_token
+
     return SetupStatusResponse(
         classroom=ServiceStatus(
-            credentials_exists=os.path.exists(SERVICE_FILE_MAP["classroom"]["credentials"]),
-            token_exists=os.path.exists(SERVICE_FILE_MAP["classroom"]["token"])
+            credentials_exists=classroom_creds,
+            token_exists=classroom_token
         ),
         email=ServiceStatus(
-            credentials_exists=os.path.exists(SERVICE_FILE_MAP["email"]["credentials"]),
-            token_exists=os.path.exists(SERVICE_FILE_MAP["email"]["token"])
+            credentials_exists=email_creds,
+            token_exists=email_token
         )
     )
 

@@ -1,8 +1,9 @@
 {
   "expo": {
     "name": "Student OS",
-    "slug": "student-os-v3",
-    "version": "1.0.0",
+    "slug": "student-os-v4",
+    "scheme": "studentos",
+    "version": "4.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,11 +18,17 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.sumirann1.studentos"
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "53e35e3f-5891-4176-bd61-71d905856d7d"
+      }
     }
   }
 }

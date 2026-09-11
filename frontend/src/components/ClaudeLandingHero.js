@@ -29,13 +29,39 @@ const PROMPT_CARDS = [
   },
 ];
 
-export default function ClaudeLandingHero({ onSelectPrompt }) {
-  const getGreeting = () => {
+const calculateGreeting = () => {
+  try {
+    const kolkataHourStr = new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Kolkata',
+      hour: 'numeric',
+      hour12: false,
+    });
+    const hour = parseInt(kolkataHourStr, 10);
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 22) return 'Good evening';
+    return 'Good night';
+  } catch (e) {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 22) return 'Good evening';
+    return 'Good night';
+  }
+};
+
+export default function ClaudeLandingHero({ userName, onSelectPrompt }) {
+  const [greeting, setGreeting] = React.useState(() => calculateGreeting());
+
+  React.useEffect(() => {
+    setGreeting(calculateGreeting());
+    const timer = setInterval(() => {
+      setGreeting(calculateGreeting());
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const displayName = userName ? userName.trim().split(' ')[0] : 'Student';
 
   return (
     <View style={styles.container}>
@@ -44,7 +70,7 @@ export default function ClaudeLandingHero({ onSelectPrompt }) {
         <View style={styles.logoBadge}>
           <Image source={require('../../assets/app-logo.png')} style={styles.logoImg} />
         </View>
-        <Text style={styles.greetingText}>{getGreeting()}, Student</Text>
+        <Text style={styles.greetingText}>{greeting}, {displayName}</Text>
         <Text style={styles.subtitleText}>How can Student OS assist your academics today?</Text>
       </View>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Platform, StatusBar } from 'react-native';
 import { colors } from '../theme/colors';
 import { fetchSetupStatus, saveSetupData, triggerServiceAuth } from '../services/setupApi';
+import { startOAuthLogin } from '../services/authApi';
 
 export default function SetupModal({ visible, onClose }) {
   const [status, setStatus] = useState(null);
@@ -38,6 +39,15 @@ export default function SetupModal({ visible, onClose }) {
       setFeedback({ type: 'error', message: err.message || 'Authentication trigger failed' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setFeedback(null);
+    try {
+      await startOAuthLogin('google');
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Google Sign-In failed' });
     }
   };
 
@@ -114,6 +124,12 @@ export default function SetupModal({ visible, onClose }) {
                 </View>
               </View>
             )}
+
+            {/* Supabase OAuth Google Sign In / Sign Up Section */}
+            <Text style={styles.sectionHeader}>User Account (Supabase OAuth)</Text>
+            <TouchableOpacity style={styles.googleAuthBtn} onPress={handleGoogleSignIn}>
+              <Text style={styles.googleAuthBtnText}>🌐 Sign In / Sign Up with Google</Text>
+            </TouchableOpacity>
 
             {/* Service Selector */}
             <Text style={styles.sectionHeader}>Configure & Authenticate</Text>
@@ -334,6 +350,18 @@ const styles = StyleSheet.create({
   authBtnText: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 13,
+  },
+  googleAuthBtn: {
+    backgroundColor: '#4285F4',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  googleAuthBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
     fontSize: 13,
   },
   helpText: {

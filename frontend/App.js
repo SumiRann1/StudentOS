@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, FlatList, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, FlatList, StatusBar, KeyboardAvoidingView, Platform, Linking, ActivityIndicator } from 'react-native';
 import { colors } from './src/theme/colors';
 import Header from './src/components/Header';
 import MessageItem from './src/components/MessageItem';
@@ -7,8 +7,11 @@ import ChatInput from './src/components/ChatInput';
 import ClaudeLandingHero from './src/components/ClaudeLandingHero';
 import SetupModal from './src/components/SetupModal';
 import SidebarDrawer from './src/components/SidebarDrawer';
+import LoginScreen from './src/components/LoginScreen';
 import { streamAgentResponse } from './src/services/chatStream';
 import { fetchSetupStatus } from './src/services/setupApi';
+import { fetchUserProfile } from './src/services/authApi';
+import { storage } from './src/services/storage';
 
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -28,13 +31,95 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(false);
   const [isSetupVisible, setIsSetupVisible] = useState(false);
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
+  const [userSession, setUserSession] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
   
   const flatListRef = useRef(null);
   const threadIdRef = useRef(generateUUID());
 
   useEffect(() => {
     checkServerHealth();
+    restoreUserSession();
+
+    const handleDeepLink = async (event) => {
+      if (event.url && event.url.includes('access_token')) {
+        console.log('Successfully authenticated via OAuth deep link:', event.url);
+        try {
+          const queryString = event.url.split('?')[1] || event.url.split('#')[1] || '';
+          const params = new URLSearchParams(queryString);
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+
+          if (accessToken) {
+            const sessionData = { accessToken, refreshToken, timestamp: Date.now() };
+            await storage.setItem('userSession', sessionData);
+            setUserSession(sessionData);
+            loadUserProfile(accessToken);
+          }
+        } catch (e) {
+          console.warn('Failed to parse deep link session:', e);
+        }
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url });
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
+
+  const loadUserProfile = async (token) => {
+    if (!token) return;
+    try {
+      const profile = await fetchUserProfile(token);
+      if (profile) {
+        setUserProfile(profile);
+      }
+    } catch (e) {
+      console.warn('Failed to fetch user profile:', e);
+    }
+  };
+
+  const restoreUserSession = async () => {
+    try {
+      const savedSession = await storage.getItem('userSession');
+      if (savedSession) {
+        const parsed = typeof savedSession === 'string' ? JSON.parse(savedSession) : savedSession;
+        setUserSession(parsed);
+        if (parsed?.accessToken) {
+          loadUserProfile(parsed.accessToken);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore session:', e);
+    } finally {
+      setIsRestoringSession(false);
+    }
+  };
+
+  const getUserDisplayName = () => {
+    if (userProfile?.full_name) return userProfile.full_name;
+    if (userProfile?.name) return userProfile.name;
+    if (userSession?.userName) return userSession.userName;
+    const email = userProfile?.email || userSession?.email;
+    if (email) {
+      const rawName = email.split('@')[0];
+      const cleanName = rawName.split('.')[0].replace(/[^a-zA-Z0-9]/g, '');
+      if (cleanName) return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    }
+    return 'Student';
+  };
+
+  const handleLogout = async () => {
+    await storage.removeItem('userSession');
+    setUserSession(null);
+    setUserProfile(null);
+  };
 
   const checkServerHealth = async () => {
     const status = await fetchSetupStatus();
@@ -155,6 +240,18 @@ export default function App() {
   const firstUserMsg = messages.find((m) => m.sender === 'user');
   const chatTopic = firstUserMsg ? firstUserMsg.text : 'Student OS';
 
+  if (isRestoringSession) {
+    return (
+      <View style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (!userSession) {
+    return <LoginScreen onLoginSuccess={(sessionData) => setUserSession(sessionData)} />;
+  }
+
   return (
     <View style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
@@ -175,7 +272,7 @@ export default function App() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {messages.length === 0 ? (
-          <ClaudeLandingHero onSelectPrompt={(promptText) => handleSend(promptText)} />
+          <ClaudeLandingHero userName={getUserDisplayName()} onSelectPrompt={(promptText) => handleSend(promptText)} />
         ) : (
           <FlatList
             ref={flatListRef}
@@ -207,6 +304,9 @@ export default function App() {
         isOnline={isOnline}
         onNewChat={handleNewChat}
         onOpenSetup={() => setIsSetupVisible(true)}
+        onLogout={handleLogout}
+        userProfile={userProfile}
+        userSession={userSession}
       />
 
       {/* Credentials & Service Setup Modal */}
