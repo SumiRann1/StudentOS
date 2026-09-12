@@ -1,9 +1,11 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const memoryStore = {};
 
 /**
  * Universal persistent storage helper for Web and React Native/Expo.
+ * Persists session data across app restarts on iOS, Android, and Web.
  */
 export const storage = {
   setItem: async (key, value) => {
@@ -11,12 +13,15 @@ export const storage = {
       const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
       if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem(key, stringValue);
-      } else {
-        memoryStore[key] = stringValue;
       }
+      await AsyncStorage.setItem(key, stringValue);
     } catch (e) {
-      console.warn('Storage setItem failed:', e);
-      memoryStore[key] = typeof value === 'string' ? value : JSON.stringify(value);
+      try {
+        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+        memoryStore[key] = stringValue;
+      } catch (err) {
+        console.warn('Storage setItem failed:', err);
+      }
     }
   },
 
@@ -26,6 +31,8 @@ export const storage = {
         const val = window.localStorage.getItem(key);
         if (val !== null) return val;
       }
+      const asyncVal = await AsyncStorage.getItem(key);
+      if (asyncVal !== null) return asyncVal;
       return memoryStore[key] || null;
     } catch (e) {
       console.warn('Storage getItem failed:', e);
@@ -38,6 +45,7 @@ export const storage = {
       if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.removeItem(key);
       }
+      await AsyncStorage.removeItem(key);
       delete memoryStore[key];
     } catch (e) {
       console.warn('Storage removeItem failed:', e);
