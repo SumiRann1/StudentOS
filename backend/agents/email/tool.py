@@ -154,7 +154,8 @@ def search_emails(query: str = "is:unread", max_results: int = 5) -> dict:
                 "subject": subject,
                 "date": date,
                 "snippet": snippet,
-                "body": body[:500] if body else snippet  # return first 500 chars of body
+                "body": body[:500] if body else snippet,  # return first 500 chars of body
+                "link": f"https://mail.google.com/mail/u/0/#all/{msg['id']}"
             })
 
         return {"success": True, "count": len(email_list), "emails": email_list}
@@ -189,7 +190,8 @@ def read_email(message_id: str) -> dict:
             "subject": headers.get("subject", ""),
             "date": format_email_date(headers.get("date", "")),
             "labels": msg.get("labelIds", []),
-            "body": body[:1500] if body else ""
+            "body": body[:1500] if body else "",
+            "link": f"https://mail.google.com/mail/u/0/#all/{msg['id']}"
         }
     except Exception as e:
         return {"success": False, "message": f"Failed to read email '{message_id}': {str(e)}"}
@@ -382,7 +384,8 @@ def get_emails_in_date_range(start_date: str, end_date: str = "", query: str = "
                 "subject": headers.get("subject", "(No Subject)"),
                 "date": format_email_date(headers.get("date", "")),
                 "snippet": msg.get("snippet", ""),
-                "body": body[:500] if body else msg.get("snippet", "")
+                "body": body[:500] if body else msg.get("snippet", ""),
+                "link": f"https://mail.google.com/mail/u/0/#all/{msg['id']}"
             })
 
         return {"success": True, "count": len(email_list), "emails": email_list}
@@ -432,7 +435,8 @@ def search_emails_by_keyword(keyword: str, max_results: int = 5) -> dict:
                 "subject": headers.get("subject", "(No Subject)"),
                 "date": format_email_date(headers.get("date", "")),
                 "snippet": msg.get("snippet", ""),
-                "body": body[:500] if body else msg.get("snippet", "")
+                "body": body[:500] if body else msg.get("snippet", ""),
+                "link": f"https://mail.google.com/mail/u/0/#all/{msg['id']}"
             })
 
         return {"success": True, "count": len(email_list), "emails": email_list}

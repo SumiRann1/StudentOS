@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Animated, ScrollView, Linking } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { colors } from '../theme/colors';
 
@@ -96,6 +96,13 @@ export default function MessageItem({ message }) {
   const isUser = message.sender === 'user';
   const isThinking = message.isStreaming && !message.text;
 
+  const handleLinkPress = (url) => {
+    if (url) {
+      Linking.openURL(url).catch((err) => console.error("Couldn't open link:", url, err));
+    }
+    return true;
+  };
+
   return (
     <View style={[styles.wrapper, isUser ? styles.userWrapper : styles.agentWrapper]}>
       <View style={[styles.bubble, isUser ? styles.userBubble : styles.agentBubble]}>
@@ -119,7 +126,7 @@ export default function MessageItem({ message }) {
           </Text>
         ) : (
           <View style={styles.agentContentContainer}>
-            <Markdown style={markdownStyles} rules={markdownRules}>
+            <Markdown style={markdownStyles} rules={markdownRules} onLinkPress={handleLinkPress}>
               {message.text || ''}
             </Markdown>
             {message.isStreaming && <BlinkingCursor />}
@@ -165,7 +172,8 @@ const markdownStyles = {
     fontStyle: 'italic',
   },
   link: {
-    color: colors.primary,
+    color: '#60A5FA',
+    fontWeight: '600',
     textDecorationLine: 'underline',
   },
   code_inline: {

@@ -453,7 +453,10 @@ def list_student_submissions(course_id_or_name: str = "", coursework_id_or_title
                         items = cw_res.get("courseWork", [])
                         for item in items:
                             title = item.get("title", "")
-                            cw_map[item["id"]] = title
+                            cw_map[item["id"]] = {
+                                "title": title,
+                                "alternateLink": item.get("alternateLink", "")
+                            }
                             if item["id"] == target_cw_search or target_cw_search.lower() in title.lower():
                                 resolved_cw_ids.append(item["id"])
                     except Exception:
@@ -465,7 +468,10 @@ def list_student_submissions(course_id_or_name: str = "", coursework_id_or_title
                     try:
                         cw_res = service.courses().courseWork().list(courseId=cid).execute()
                         for item in cw_res.get("courseWork", []):
-                            cw_map[item["id"]] = item.get("title", "")
+                            cw_map[item["id"]] = {
+                                "title": item.get("title", ""),
+                                "alternateLink": item.get("alternateLink", "")
+                            }
                     except Exception:
                         pass
 
@@ -478,16 +484,18 @@ def list_student_submissions(course_id_or_name: str = "", coursework_id_or_title
 
                         for s in subs:
                             c_work_id = s.get("courseWorkId", cw_id)
+                            cw_info = cw_map.get(c_work_id, {})
                             all_submissions.append({
                                 "id": s.get("id"),
                                 "courseId": cid,
                                 "courseWorkId": c_work_id,
-                                "assignmentTitle": cw_map.get(c_work_id, ""),
+                                "assignmentTitle": cw_info.get("title", "") if isinstance(cw_info, dict) else str(cw_info),
                                 "state": s.get("state"),
                                 "assignedGrade": s.get("assignedGrade"),
                                 "draftGrade": s.get("draftGrade"),
                                 "late": s.get("late", False),
-                                "updateTime": s.get("updateTime", "")
+                                "updateTime": s.get("updateTime", ""),
+                                "alternateLink": s.get("alternateLink") or (cw_info.get("alternateLink", "") if isinstance(cw_info, dict) else "")
                             })
                     except Exception:
                         continue

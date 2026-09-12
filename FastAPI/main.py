@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Student OS Agent API",
     description="An LLM-powered agent system for managing student tasks.",
-    version="1.0.0",
+    version="4.0.0",
 )
 
 app.add_middleware(

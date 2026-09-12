@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Student OS",
-    "slug": "student-os-v4",
+    "slug": "student-os-v3",
     "scheme": "studentos",
     "version": "4.0.0",
     "orientation": "portrait",
