@@ -1,10 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List, Literal
 
-class QueryRequest(BaseModel):
-    query: str
-    thread_id: str = "default_thread"
-
 class ServiceStatus(BaseModel):
     credentials_exists: bool
     token_exists: bool

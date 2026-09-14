@@ -5,10 +5,11 @@ import { API_BASE_URL } from '../config/api';
  * 
  * @param {string} query - The user question or prompt
  * @param {string} threadId - Session ID for agent state persistence
+ * @param {string} userName - The name of the user
  * @param {object} callbacks - Event callbacks: onChunk, onToolStart, onError, onDone
  */
-export async function streamAgentResponse(query, threadId, callbacks) {
-  const { onChunk, onToolStart, onError, onDone } = callbacks;
+export async function streamAgentResponse(query, userName, threadId, callbacks) {
+  const { onChunk, onToolStart, onThreadInit, onError, onDone } = callbacks || {};
   const endpoint = `${API_BASE_URL}/chat/stream`;
 
   try {
@@ -20,7 +21,8 @@ export async function streamAgentResponse(query, threadId, callbacks) {
       },
       body: JSON.stringify({
         query: query,
-        thread_id: threadId || 'default_thread',
+        user_name: userName || 'Student',
+        thread_id: threadId || null,
       }),
     });
 
@@ -55,7 +57,9 @@ export async function streamAgentResponse(query, threadId, callbacks) {
 
           try {
             const parsed = JSON.parse(dataStr);
-            if (parsed.type === 'content' && parsed.content) {
+            if ((parsed.type === 'new_thread' || parsed.type === 'thread_init') && parsed.thread_id) {
+              if (onThreadInit) onThreadInit(parsed.thread_id);
+            } else if (parsed.type === 'content' && parsed.content) {
               if (onChunk) onChunk(parsed.content, parsed.node);
             } else if (parsed.type === 'tool_call') {
               if (onToolStart) onToolStart(parsed.name, parsed.args);
@@ -78,7 +82,9 @@ export async function streamAgentResponse(query, threadId, callbacks) {
           if (dataStr === '[DONE]') continue;
           try {
             const parsed = JSON.parse(dataStr);
-            if (parsed.type === 'content' && parsed.content) {
+            if ((parsed.type === 'new_thread' || parsed.type === 'thread_init') && parsed.thread_id) {
+              if (onThreadInit) onThreadInit(parsed.thread_id);
+            } else if (parsed.type === 'content' && parsed.content) {
               if (onChunk) onChunk(parsed.content, parsed.node);
             } else if (parsed.type === 'tool_call') {
               if (onToolStart) onToolStart(parsed.name, parsed.args);
@@ -94,3 +100,90 @@ export async function streamAgentResponse(query, threadId, callbacks) {
     if (onError) onError(error.message || 'Connection error');
   }
 }
+
+/**
+ * Fetch AI title and thread ID from FastAPI /chat/get_chat_info endpoint.
+ * 
+ * @param {string} query - The initial user message/prompt
+ * @param {string} userName - User display name
+ * @param {string} [threadId] - Optional existing thread ID
+ * @returns {Promise<{thread_id: string, title: string} | null>}
+ */
+export async function fetchChatInfo(query, userName, threadId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/chat/get_chat_info`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: query,
+        user_name: userName || 'Student',
+        thread_id: threadId || null,
+      }),
+    });
+
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.error('fetchChatInfo error:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch recent chat threads for a user from FastAPI backend SQLite DB.
+ * 
+ * @param {string} userName
+ * @returns {Promise<Array<{thread_id: string, title: string, created_at: string, updated_at: string}>>}
+ */
+export async function fetchUserThreads(userName) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/chat/get_user_threads`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_name: userName || 'Student',
+      }),
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.response || [];
+  } catch (err) {
+    console.error('fetchUserThreads error:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetch message history for a thread from FastAPI backend SQLite DB.
+ * 
+ * @param {string} threadId
+ * @param {string} userName
+ * @returns {Promise<Array<{id: string, thread_id: string, sender: string, content: string, timestamp: string}>>}
+ */
+export async function fetchThreadMessages(threadId, userName) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/chat/get_thread_messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        thread_id: threadId,
+        user_name: userName || 'Student',
+      }),
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.response || [];
+  } catch (err) {
+    console.error('fetchThreadMessages error:', err);
+    return [];
+  }
+}
+

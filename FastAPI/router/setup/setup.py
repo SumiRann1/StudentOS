@@ -26,9 +26,9 @@ def save_json_file(file_path: str, data: Dict[str, Any]):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
-setup_route = APIRouter(prefix="/setup", tags=["Setup"])
+setup_router = APIRouter(prefix="/setup", tags=["Setup"])
 
-@setup_route.get("/status", response_model=SetupStatusResponse)
+@setup_router.get("/status", response_model=SetupStatusResponse)
 async def get_setup_status():
     """ Check status of credentials and token files for Classroom and Email services. """
     classroom_token = os.path.exists(SERVICE_FILE_MAP["classroom"]["token"])
@@ -48,7 +48,7 @@ async def get_setup_status():
         )
     )
 
-@setup_route.post("/auth/{service}", response_model=AuthTriggerResponse)
+@setup_router.post("/auth/{service}", response_model=AuthTriggerResponse)
 async def trigger_auth(service: str):
     """ Trigger or verify OAuth authentication for Classroom or Email service. """
     if service not in SERVICE_FILE_MAP:
@@ -85,7 +85,7 @@ async def trigger_auth(service: str):
             token_exists=token_exists
         )
 
-@setup_route.post("/save", response_model=SetupSaveResponse)
+@setup_router.post("/save", response_model=SetupSaveResponse)
 async def save_setup_data(req: SetupSaveRequest):
     """ Save JSON object credentials and/or tokens for Classroom or Email service. """
     if req.service not in SERVICE_FILE_MAP:
@@ -111,7 +111,7 @@ async def save_setup_data(req: SetupSaveRequest):
         saved_files=saved
     )
 
-@setup_route.post("/upload/{service}", response_model=SetupSaveResponse)
+@setup_router.post("/upload/{service}", response_model=SetupSaveResponse)
 async def upload_setup_file(service: str, file_type: str = Form(...), file: UploadFile = File(...)):
     """ Upload credentials.json or token.json file directly for a service. """
     if service not in SERVICE_FILE_MAP:

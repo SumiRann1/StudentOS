@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Animated, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Animated, Image, ScrollView } from 'react-native';
 import { colors } from '../theme/colors';
 import { startOAuthLogin } from '../services/authApi';
 
@@ -17,7 +17,19 @@ const getKolkataTime = () => {
   }
 };
 
-export default function SidebarDrawer({ visible, onClose, isOnline, onNewChat, onOpenSetup, onLogout, userProfile, userSession }) {
+export default function SidebarDrawer({
+  visible,
+  onClose,
+  isOnline,
+  onNewChat,
+  onOpenSetup,
+  onLogout,
+  userProfile,
+  userSession,
+  recentChats = [],
+  onSelectChat,
+  activeThreadId,
+}) {
   const [currentTime, setCurrentTime] = React.useState(() => getKolkataTime());
 
   React.useEffect(() => {
@@ -35,14 +47,16 @@ export default function SidebarDrawer({ visible, onClose, isOnline, onNewChat, o
     onClose();
   };
 
-  const handleSetupPress = () => {
-    onOpenSetup();
+  const handleSelectChatPress = (chat) => {
+    if (onSelectChat) {
+      onSelectChat(chat);
+    }
     onClose();
   };
 
-  const handleGoogleAuthPress = () => {
+  const handleSetupPress = () => {
+    onOpenSetup();
     onClose();
-    startOAuthLogin('google');
   };
 
   const handleLogoutPress = () => {
@@ -72,44 +86,64 @@ export default function SidebarDrawer({ visible, onClose, isOnline, onNewChat, o
             </TouchableOpacity>
           </View>
 
-          {/* Action: New Chat Button (ChatGPT Style) */}
+          {/* Action: New Chat Button */}
           <TouchableOpacity style={styles.newChatBtn} onPress={handleNewChatPress}>
             <Text style={styles.newChatIcon}>+</Text>
             <Text style={styles.newChatText}>New Chat</Text>
           </TouchableOpacity>
 
-          {/* Status & Time Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>System & Time</Text>
-            <View style={styles.statusRow}>
-              <View style={[styles.statusDot, { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting }]} />
-              <Text style={styles.statusText}>{isOnline ? 'Backend Server Connected' : 'Connecting to Server...'}</Text>
-            </View>
-            <View style={styles.timeRow}>
-              <Text style={styles.timeIcon}>🕒</Text>
-              <Text style={styles.timeText}>{currentTime}</Text>
-            </View>
-          </View>
-
-          {/* Navigation Items */}
-          <View style={styles.menuSection}>
-            <TouchableOpacity style={styles.menuItem} onPress={handleNewChatPress}>
-              <Text style={styles.menuItemIcon}>💬</Text>
-              <Text style={styles.menuItemText}>Current Session</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem} onPress={handleSetupPress}>
-              <Text style={styles.menuItemIcon}>⚙️</Text>
-              <Text style={styles.menuItemText}>Service Credentials & OAuth</Text>
-            </TouchableOpacity>
-
-            {onLogout && (
-              <TouchableOpacity style={styles.menuItem} onPress={handleLogoutPress}>
-                <Text style={styles.menuItemIcon}>🚪</Text>
-                <Text style={[styles.menuItemText, { color: colors.error }]}>Sign Out</Text>
-              </TouchableOpacity>
+          {/* Scrollable Main Drawer Content */}
+          <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            {/* Recent Chats Section */}
+            {recentChats && recentChats.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Recent Chats</Text>
+                {recentChats.map((chat) => {
+                  const isActive = activeThreadId === chat.thread_id;
+                  return (
+                    <TouchableOpacity
+                      key={chat.thread_id || chat.timestamp}
+                      style={[styles.recentChatItem, isActive && styles.recentChatItemActive]}
+                      onPress={() => handleSelectChatPress(chat)}
+                    >
+                      <Text style={styles.recentChatIcon}>💬</Text>
+                      <Text style={[styles.recentChatTitle, isActive && styles.recentChatTitleActive]} numberOfLines={1}>
+                        {chat.title || 'Untitled Chat'}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             )}
-          </View>
+
+            {/* Status & Time Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>System & Time</Text>
+              <View style={styles.statusRow}>
+                <View style={[styles.statusDot, { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting }]} />
+                <Text style={styles.statusText}>{isOnline ? 'Backend Server Connected' : 'Connecting to Server...'}</Text>
+              </View>
+              <View style={styles.timeRow}>
+                <Text style={styles.timeIcon}>🕒</Text>
+                <Text style={styles.timeText}>{currentTime}</Text>
+              </View>
+            </View>
+
+            {/* Navigation Items */}
+            <View style={styles.menuSection}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleSetupPress}>
+                <Text style={styles.menuItemIcon}>⚙️</Text>
+                <Text style={styles.menuItemText}>Service Credentials & OAuth</Text>
+              </TouchableOpacity>
+
+              {onLogout && (
+                <TouchableOpacity style={styles.menuItem} onPress={handleLogoutPress}>
+                  <Text style={styles.menuItemIcon}>🚪</Text>
+                  <Text style={[styles.menuItemText, { color: colors.error }]}>Sign Out</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </ScrollView>
 
           {/* Footer Info */}
           <View style={styles.footer}>
@@ -201,6 +235,40 @@ const styles = StyleSheet.create({
   newChatText: {
     color: colors.textPrimary,
     fontSize: 14,
+    fontWeight: '600',
+  },
+  scrollArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 12,
+  },
+  recentChatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 4,
+    backgroundColor: 'transparent',
+  },
+  recentChatItemActive: {
+    backgroundColor: 'rgba(16, 163, 127, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 163, 127, 0.3)',
+  },
+  recentChatIcon: {
+    fontSize: 14,
+    marginRight: 10,
+  },
+  recentChatTitle: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '500',
+    flex: 1,
+  },
+  recentChatTitleActive: {
+    color: colors.textPrimary,
     fontWeight: '600',
   },
   section: {

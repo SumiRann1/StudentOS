@@ -20,7 +20,7 @@ export const storage = {
         const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
         memoryStore[key] = stringValue;
       } catch (err) {
-        console.warn('Storage setItem failed:', err);
+        memoryStore[key] = null;
       }
     }
   },
@@ -35,7 +35,6 @@ export const storage = {
       if (asyncVal !== null) return asyncVal;
       return memoryStore[key] || null;
     } catch (e) {
-      console.warn('Storage getItem failed:', e);
       return memoryStore[key] || null;
     }
   },
@@ -48,7 +47,6 @@ export const storage = {
       await AsyncStorage.removeItem(key);
       delete memoryStore[key];
     } catch (e) {
-      console.warn('Storage removeItem failed:', e);
       delete memoryStore[key];
     }
   },

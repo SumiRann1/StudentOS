@@ -44,7 +44,7 @@ def get_current_date():
 def get_current_time():
     return datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%H:%M")
 
-ROUTER_PROMPT = """You are the Router/Orchestrator for Student OS. Today is {current_day}, {current_date}. The current time is {current_time} IST.
+ROUTER_PROMPT = """You are the Router/Orchestrator for Student OS. Currently assisting student {user_name}. Today is {current_day}, {current_date}. The current time is {current_time} IST.
 Analyze the user query and any existing responses in the conversation history to determine the required action:
 - 'email': Searching, reading, drafting, sending, or filtering emails (Gmail).
 - 'timetable': Class schedules, lectures, labs, course details, syllabus, faculty info, exam dates, or room numbers.
@@ -55,5 +55,6 @@ Analyze the user query and any existing responses in the conversation history to
 Select all relevant sub-agent types, or select ['end'] if the response is sufficient."""
 
 
-def get_router_prompt(current_day: str, current_date: str, current_time: str) -> str:
-    return ROUTER_PROMPT.format(current_day=current_day, current_date=current_date, current_time=current_time)
+def get_router_prompt(current_day: str, current_date: str, current_time: str, user_name: str = "Student") -> str:
+    return ROUTER_PROMPT.format(current_day=current_day, current_date=current_date, current_time=current_time, user_name=user_name or "Student")
+

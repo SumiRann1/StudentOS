@@ -8,7 +8,7 @@ import ClaudeLandingHero from './src/components/ClaudeLandingHero';
 import SetupModal from './src/components/SetupModal';
 import SidebarDrawer from './src/components/SidebarDrawer';
 import LoginScreen from './src/components/LoginScreen';
-import { streamAgentResponse } from './src/services/chatStream';
+import { streamAgentResponse, fetchChatInfo, fetchUserThreads, fetchThreadMessages } from './src/services/chatStream';
 import { fetchSetupStatus } from './src/services/setupApi';
 import { fetchUserProfile } from './src/services/authApi';
 import { storage } from './src/services/storage';
@@ -34,9 +34,11 @@ export default function App() {
   const [userSession, setUserSession] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [isRestoringSession, setIsRestoringSession] = useState(true);
+  const [recentChats, setRecentChats] = useState([]);
+  const [activeTitle, setActiveTitle] = useState('Student OS');
   
   const flatListRef = useRef(null);
-  const threadIdRef = useRef(generateUUID());
+  const threadIdRef = useRef(null);
 
   useEffect(() => {
     checkServerHealth();
@@ -85,6 +87,17 @@ export default function App() {
     }
   };
 
+  const loadUserThreadsFromBackend = async () => {
+    try {
+      const threads = await fetchUserThreads(getUserDisplayName());
+      if (Array.isArray(threads)) {
+        setRecentChats(threads);
+      }
+    } catch (e) {
+      console.warn('Failed to load user threads from SQLite backend:', e);
+    }
+  };
+
   const restoreUserSession = async () => {
     try {
       const savedSession = await storage.getItem('userSession');
@@ -95,6 +108,7 @@ export default function App() {
           loadUserProfile(parsed.accessToken);
         }
       }
+      await loadUserThreadsFromBackend();
     } catch (e) {
       console.warn('Failed to restore session:', e);
     } finally {
@@ -134,7 +148,31 @@ export default function App() {
     setMessages([]);
     setQuery('');
     setIsStreaming(false);
-    threadIdRef.current = generateUUID();
+    threadIdRef.current = null;
+    setActiveTitle('Student OS');
+  };
+
+  const handleSelectChat = async (chat) => {
+    if (!chat || !chat.thread_id) return;
+    threadIdRef.current = chat.thread_id;
+    setActiveTitle(chat.title || 'Student OS');
+
+    try {
+      const dbMsgs = await fetchThreadMessages(chat.thread_id, getUserDisplayName());
+      if (Array.isArray(dbMsgs) && dbMsgs.length > 0) {
+        const formatted = dbMsgs.map((m) => ({
+          id: m.id || generateUUID(),
+          sender: m.sender,
+          text: m.content,
+        }));
+        setMessages(formatted);
+      } else {
+        setMessages([]);
+      }
+    } catch (e) {
+      console.warn('Failed to load thread messages from backend SQLite:', e);
+      setMessages([]);
+    }
   };
 
   const scrollToBottom = () => {
@@ -150,7 +188,18 @@ export default function App() {
     if (!userText || isStreaming) return;
 
     setQuery('');
-    
+
+    // Fetch chat info (AI title & thread_id) if starting a brand new thread
+    if (!threadIdRef.current) {
+      const chatInfo = await fetchChatInfo(userText, getUserDisplayName(), null);
+      const threadId = chatInfo?.thread_id || generateUUID();
+      const title = chatInfo?.title || (userText.length > 35 ? `${userText.slice(0, 32)}...` : userText);
+
+      threadIdRef.current = threadId;
+      setActiveTitle(title);
+      loadUserThreadsFromBackend();
+    }
+
     const userMsgId = generateUUID();
     const agentMsgId = generateUUID();
 
@@ -174,7 +223,12 @@ export default function App() {
     setIsStreaming(true);
     scrollToBottom();
 
-    await streamAgentResponse(userText, threadIdRef.current, {
+    await streamAgentResponse(userText, getUserDisplayName(), threadIdRef.current, {
+      onThreadInit: (newThreadId) => {
+        if (!threadIdRef.current) {
+          threadIdRef.current = newThreadId;
+        }
+      },
       onChunk: (chunkText) => {
         setMessages((prevMsgs) => {
           return prevMsgs.map((msg) => {
@@ -233,12 +287,13 @@ export default function App() {
           });
         });
         setIsStreaming(false);
+        loadUserThreadsFromBackend();
       },
     });
   };
 
   const firstUserMsg = messages.find((m) => m.sender === 'user');
-  const chatTopic = firstUserMsg ? firstUserMsg.text : 'Student OS';
+  const chatTopic = activeTitle || (firstUserMsg ? firstUserMsg.text : 'Student OS');
 
   if (isRestoringSession) {
     return (
@@ -307,6 +362,9 @@ export default function App() {
         onLogout={handleLogout}
         userProfile={userProfile}
         userSession={userSession}
+        recentChats={recentChats}
+        onSelectChat={handleSelectChat}
+        activeThreadId={threadIdRef.current}
       />
 
       {/* Credentials & Service Setup Modal */}

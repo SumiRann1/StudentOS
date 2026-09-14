@@ -9,6 +9,7 @@ def preprocessor(state: AgentState) -> dict:
     current_day = state.get("current_day") or get_current_day()
     current_date = state.get("current_date") or get_current_date()
     current_time = state.get("current_time") or get_current_time()
+    user_name = state.get("user_name") or ""
 
     existing_messages = state.get("messages", [])
 
@@ -20,10 +21,11 @@ def preprocessor(state: AgentState) -> dict:
                 "type": ["end"],
                 "current_day": current_day,
                 "current_date": current_date,
-                "current_time": current_time
+                "current_time": current_time,
+                "user_name": user_name
             }
 
-    router_prompt = get_router_prompt(current_day, current_date, current_time)
+    router_prompt = get_router_prompt(current_day, current_date, current_time, user_name)
 
     clean_history = []
     for msg in existing_messages[-4:]:
@@ -47,11 +49,23 @@ def preprocessor(state: AgentState) -> dict:
         "type": agent_type,
         "current_day": current_day,
         "current_date": current_date,
-        "current_time": current_time
+        "current_time": current_time,
+        "user_name": user_name
     }
 
 
+from state import AgentState, get_general_prompt
+
 def general_node(state : AgentState):
-    messages = state["messages"]
+    messages = list(state.get("messages", []))
+    current_day = state.get("current_day") or get_current_day()
+    current_date = state.get("current_date") or get_current_date()
+    current_time = state.get("current_time") or get_current_time()
+    user_name = state.get("user_name") or "Student"
+
+    system_prompt = get_general_prompt(current_day, current_date, current_time, user_name)
+    if not messages or not isinstance(messages[0], SystemMessage):
+        messages = [SystemMessage(content=system_prompt)] + messages
+
     response = llm.invoke(messages)
     return {"messages": [response]}

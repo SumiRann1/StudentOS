@@ -27,8 +27,9 @@ def chat_node(state: AgentState):
     current_day = state.get("current_day") or get_current_day()
     current_date = state.get("current_date") or get_current_date()
     current_time = state.get("current_time") or get_current_time()
+    user_name = state.get("user_name") or ""
 
-    system_prompt = get_classroom_prompt(current_day, current_date, current_time)
+    system_prompt = get_classroom_prompt(current_day, current_date, current_time, user_name)
     if not messages or not isinstance(messages[0], SystemMessage):
         messages = [SystemMessage(content=system_prompt)] + messages
 
