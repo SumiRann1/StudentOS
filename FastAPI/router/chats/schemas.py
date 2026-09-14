@@ -13,3 +13,9 @@ class TitleResponse(BaseModel):
 class ThreadsDBResponse(BaseModel):
     user_name: str
     response: List[Dict[str, Any]]
+
+class PinRequest(BaseModel):
+    thread_id: str
+
+class DeleteRequest(BaseModel):
+    thread_id: str

@@ -7,11 +7,13 @@ DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "StudentOS.db"
 async def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA foreign_keys = ON;")
         await db.execute("""
             CREATE TABLE IF NOT EXISTS threads (
                 thread_id TEXT PRIMARY KEY,
                 user_name TEXT NOT NULL,
                 title TEXT NOT NULL,
+                pinned BOOLEAN DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )""")
@@ -22,7 +24,7 @@ async def init_db():
                 sender TEXT NOT NULL,
                 content TEXT NOT NULL,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (thread_id) REFERENCES threads (thread_id)
+                FOREIGN KEY (thread_id) REFERENCES threads (thread_id) ON DELETE CASCADE
             )""")
         await db.commit()
 
@@ -52,7 +54,7 @@ async def get_recent_threads(user: str) -> List[Dict[str, Any]]:
         db.row_factory = aiosqlite.Row
         async with db.execute("""SELECT * FROM threads 
         WHERE user_name=?
-        ORDER BY updated_at DESC""", (user,)) as cursor:
+        ORDER BY pinned DESC, updated_at DESC""", (user,)) as cursor:
             rows = await cursor.fetchall()
             return [dict(row) for row in rows]
 
@@ -63,3 +65,26 @@ async def get_thread_messages(thread_id: str) -> List[Dict[str, Any]]:
             rows = await cursor.fetchall()
             return [dict(row) for row in rows]
     
+async def delete_thread(thread_id: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA foreign_keys = ON;")
+        await db.execute("DELETE FROM threads WHERE thread_id=?", (thread_id,))
+        await db.commit()
+
+async def delete_unpinned_threads():
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA foreign_keys = ON;")
+        await db.execute("DELETE FROM threads WHERE pinned = 0 AND updated_at < datetime('now', '-1 day')")
+        await db.commit()
+
+async def pin_thread(thread_id: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA foreign_keys = ON;")
+        await db.execute("UPDATE threads SET pinned = 1 WHERE thread_id=?", (thread_id,))
+        await db.commit()
+
+async def unpin_thread(thread_id: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA foreign_keys = ON;")
+        await db.execute("UPDATE threads SET pinned = 0 WHERE thread_id=?", (thread_id,))
+        await db.commit()

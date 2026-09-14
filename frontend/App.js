@@ -144,6 +144,11 @@ export default function App() {
     }
   };
 
+  const handleOpenDrawer = () => {
+    loadUserThreadsFromBackend();
+    setIsDrawerVisible(true);
+  };
+
   const handleNewChat = () => {
     setMessages([]);
     setQuery('');
@@ -317,7 +322,7 @@ export default function App() {
         isOnline={isOnline}
         onOpenSetup={() => setIsSetupVisible(true)}
         onNewChat={handleNewChat}
-        onOpenDrawer={() => setIsDrawerVisible(true)}
+        onOpenDrawer={handleOpenDrawer}
       />
 
       {/* Main Content Area */}
@@ -365,6 +370,7 @@ export default function App() {
         recentChats={recentChats}
         onSelectChat={handleSelectChat}
         activeThreadId={threadIdRef.current}
+        onRefreshThreads={loadUserThreadsFromBackend}
       />
 
       {/* Credentials & Service Setup Modal */}

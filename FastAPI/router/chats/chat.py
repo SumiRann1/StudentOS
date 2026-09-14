@@ -147,6 +147,12 @@ async def fetch_user_threads_route(request: QueryRequest):
     if not user_name or not user_name.strip():
         raise HTTPException(status_code=400, detail="User name is required.")
     
+    # Automatically delete unpinned threads older than 1 day before fetching
+    try:
+        await delete_unpinned_threads()
+    except Exception as e:
+        logger.warning(f"Auto-cleanup of old unpinned threads failed: {e}")
+    
     threads = await get_recent_threads(user_name)
     return ThreadsDBResponse(user_name=user_name, response=threads)
 
@@ -163,3 +169,54 @@ async def fetch_thread_messages_route(request: QueryRequest):
     
     messages = await get_thread_messages(thread_id)
     return ThreadsDBResponse(user_name=request.user_name, response=messages)
+
+@chat_router.post("/delete_thread")
+async def delete_thread_route(request: QueryRequest):
+    """
+    Dedicated endpoint for deleting a thread
+    
+    Expects JSON body: {"thread_id": "thread_id"}
+    """
+    thread_id = request.thread_id
+    if not thread_id or not str(thread_id).strip():
+        raise HTTPException(status_code=400, detail="Thread ID is required.")
+    
+    await delete_thread(thread_id)
+    return {"message":"Thread deleted successfully", "thread_id": thread_id}
+
+@chat_router.post("/delete_unpinned_threads")
+async def delete_unpinned_threads_route():
+    """
+    Dedicated endpoint for deleting old threads
+    """
+    await delete_unpinned_threads()
+    return {"message":"Old threads deleted successfully"}
+
+@chat_router.post("/pin_thread")
+async def pin_thread_route(request: PinRequest):
+    """
+    Dedicated endpoint for pinning a thread
+    
+    Expects JSON body: {"thread_id": "thread_id"}
+    """
+    thread_id = request.thread_id
+    if not thread_id or not str(thread_id).strip():
+        raise HTTPException(status_code=400, detail="Thread ID is required.")
+    
+    await pin_thread(thread_id)
+    return {"message":"Thread pinned successfully", "thread_id": thread_id}
+
+@chat_router.post("/unpin_thread")
+async def unpin_thread_route(request: PinRequest):
+    """
+    Dedicated endpoint for unpinning a thread
+    
+    Expects JSON body: {"thread_id": "thread_id"}
+    """
+    thread_id = request.thread_id
+    if not thread_id or not str(thread_id).strip():
+        raise HTTPException(status_code=400, detail="Thread ID is required.")
+    
+    await unpin_thread(thread_id)
+    return {"message":"Thread unpinned successfully", "thread_id": thread_id}
+
