@@ -187,3 +187,63 @@ export async function fetchThreadMessages(threadId, userName) {
   }
 }
 
+/**
+ * Pin a chat thread.
+ * 
+ * @param {string} threadId
+ * @returns {Promise<boolean>}
+ */
+export async function pinThread(threadId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/chat/pin_thread`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ thread_id: threadId }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('pinThread error:', err);
+    return false;
+  }
+}
+
+/**
+ * Unpin a chat thread.
+ * 
+ * @param {string} threadId
+ * @returns {Promise<boolean>}
+ */
+export async function unpinThread(threadId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/chat/unpin_thread`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ thread_id: threadId }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('unpinThread error:', err);
+    return false;
+  }
+}
+
+/**
+ * Delete a chat thread.
+ * 
+ * @param {string} threadId
+ * @returns {Promise<boolean>}
+ */
+export async function deleteThread(threadId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/chat/delete_thread`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ thread_id: threadId }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('deleteThread error:', err);
+    return false;
+  }
+}
+

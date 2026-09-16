@@ -24,3 +24,4 @@ data/*_token.json
 # OS generated files
 .DS_Store
 Thumbs.db
+*.db

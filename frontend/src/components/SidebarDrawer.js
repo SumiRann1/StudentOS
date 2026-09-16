@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Animated, Image, ScrollView } from 'react-native';
 import { colors } from '../theme/colors';
 import { startOAuthLogin } from '../services/authApi';
+import { pinThread, unpinThread, deleteThread } from '../services/chatStream';
 
 const getKolkataTime = () => {
   try {
@@ -29,11 +30,15 @@ export default function SidebarDrawer({
   recentChats = [],
   onSelectChat,
   activeThreadId,
+  onRefreshThreads,
 }) {
   const [currentTime, setCurrentTime] = React.useState(() => getKolkataTime());
 
   React.useEffect(() => {
     if (visible) {
+      if (onRefreshThreads) {
+        onRefreshThreads();
+      }
       setCurrentTime(getKolkataTime());
       const timer = setInterval(() => {
         setCurrentTime(getKolkataTime());
@@ -54,6 +59,22 @@ export default function SidebarDrawer({
     onClose();
   };
 
+  const handleTogglePin = async (chat) => {
+    if (!chat || !chat.thread_id) return;
+    if (chat.pinned == 1 || chat.pinned === true) {
+      await unpinThread(chat.thread_id);
+    } else {
+      await pinThread(chat.thread_id);
+    }
+    if (onRefreshThreads) onRefreshThreads();
+  };
+
+  const handleDeleteChat = async (chat) => {
+    if (!chat || !chat.thread_id) return;
+    await deleteThread(chat.thread_id);
+    if (onRefreshThreads) onRefreshThreads();
+  };
+
   const handleSetupPress = () => {
     onOpenSetup();
     onClose();
@@ -66,6 +87,32 @@ export default function SidebarDrawer({
 
   const userDisplayName = userProfile?.full_name || userProfile?.name || userSession?.userName;
   const userEmail = userProfile?.email || userSession?.email;
+
+  const pinnedChats = recentChats.filter((c) => c.pinned == 1 || c.pinned === true);
+  const unpinnedChats = recentChats.filter((c) => !(c.pinned == 1 || c.pinned === true));
+
+  const renderChatItem = (chat) => {
+    const isActive = activeThreadId === chat.thread_id;
+    const isPinned = chat.pinned == 1 || chat.pinned === true;
+    return (
+      <View key={chat.thread_id || chat.timestamp} style={[styles.recentChatItem, isActive && styles.recentChatItemActive]}>
+        <TouchableOpacity style={styles.chatTitleTouch} onPress={() => handleSelectChatPress(chat)}>
+          <Text style={styles.recentChatIcon}>{isPinned ? '📌' : '💬'}</Text>
+          <Text style={[styles.recentChatTitle, isActive && styles.recentChatTitleActive]} numberOfLines={1}>
+            {chat.title || 'Untitled Chat'}
+          </Text>
+        </TouchableOpacity>
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity style={styles.pinActionBtn} onPress={() => handleTogglePin(chat)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={styles.actionBtnText}>{isPinned ? '📍' : '📌'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteActionBtn} onPress={() => handleDeleteChat(chat)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={styles.actionBtnText}>🗑️</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
@@ -94,25 +141,19 @@ export default function SidebarDrawer({
 
           {/* Scrollable Main Drawer Content */}
           <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-            {/* Recent Chats Section */}
-            {recentChats && recentChats.length > 0 && (
+            {/* Pinned Chats Section */}
+            {pinnedChats.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Recent Chats</Text>
-                {recentChats.map((chat) => {
-                  const isActive = activeThreadId === chat.thread_id;
-                  return (
-                    <TouchableOpacity
-                      key={chat.thread_id || chat.timestamp}
-                      style={[styles.recentChatItem, isActive && styles.recentChatItemActive]}
-                      onPress={() => handleSelectChatPress(chat)}
-                    >
-                      <Text style={styles.recentChatIcon}>💬</Text>
-                      <Text style={[styles.recentChatTitle, isActive && styles.recentChatTitleActive]} numberOfLines={1}>
-                        {chat.title || 'Untitled Chat'}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                <Text style={styles.sectionTitle}>📌 Pinned Chats</Text>
+                {pinnedChats.map(renderChatItem)}
+              </View>
+            )}
+
+            {/* Recent Chats Section */}
+            {unpinnedChats.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>💬 Recent Chats (24h)</Text>
+                {unpinnedChats.map(renderChatItem)}
               </View>
             )}
 
@@ -246,7 +287,8 @@ const styles = StyleSheet.create({
   recentChatItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    justifyContent: 'space-between',
+    paddingVertical: 8,
     paddingHorizontal: 10,
     borderRadius: 8,
     marginBottom: 4,
@@ -256,6 +298,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16, 163, 127, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(16, 163, 127, 0.3)',
+  },
+  chatTitleTouch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 6,
   },
   recentChatIcon: {
     fontSize: 14,
@@ -270,6 +318,22 @@ const styles = StyleSheet.create({
   recentChatTitleActive: {
     color: colors.textPrimary,
     fontWeight: '600',
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pinActionBtn: {
+    padding: 4,
+    borderRadius: 4,
+  },
+  deleteActionBtn: {
+    padding: 4,
+    borderRadius: 4,
+  },
+  actionBtnText: {
+    fontSize: 12,
   },
   section: {
     marginBottom: 20,

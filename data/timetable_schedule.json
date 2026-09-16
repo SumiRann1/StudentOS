@@ -1,0 +1,127 @@
+{
+  "dayOverrides": [
+    {
+      "id": 1,
+      "date": "2026-01-27",
+      "day": "Tuesday",
+      "followsTimetableOf": "Monday"
+    },
+    {
+      "id": 2,
+      "date": "2026-02-18",
+      "day": "Wednesday",
+      "followsTimetableOf": "Friday"
+    },
+    {
+      "id": 3,
+      "date": "2026-04-27",
+      "day": "Monday",
+      "followsTimetableOf": "Friday"
+    },
+    {
+      "id": 4,
+      "date": "2026-09-03",
+      "day": "Thursday",
+      "followsTimetableOf": "Friday"
+    },
+    {
+      "id": 5,
+      "date": "2026-09-15",
+      "day": "Tuesday",
+      "followsTimetableOf": "Monday"
+    },
+    {
+      "id": 6,
+      "date": "2026-11-23",
+      "day": "Monday",
+      "followsTimetableOf": "Tuesday"
+    }
+  ],
+  "holidays": [
+    {
+      "name": "Republic Day",
+      "date": "2026-01-26",
+      "day": "Monday"
+    },
+    {
+      "name": "Holi",
+      "date": "2026-03-04",
+      "day": "Wednesday"
+    },
+    {
+      "name": "Id-ul-Fitr",
+      "date": "2026-03-21",
+      "day": "Saturday"
+    },
+    {
+      "name": "Mahavir Jayanti",
+      "date": "2026-03-31",
+      "day": "Tuesday"
+    },
+    {
+      "name": "Good Friday",
+      "date": "2026-04-03",
+      "day": "Friday"
+    },
+    {
+      "name": "Budha Purnima",
+      "date": "2026-05-01",
+      "day": "Friday"
+    },
+    {
+      "name": "Id-ul-Zuha (Bakrid)",
+      "date": "2026-05-27",
+      "day": "Wednesday"
+    },
+    {
+      "name": "Muharram",
+      "date": "2026-06-26",
+      "day": "Friday"
+    },
+    {
+      "name": "Independence Day",
+      "date": "2026-08-15",
+      "day": "Saturday"
+    },
+    {
+      "name": "Prophet Mohammad's Birthday (Id-e-Milad)",
+      "date": "2026-08-26",
+      "day": "Wednesday"
+    },
+    {
+      "name": "Janmashtami",
+      "date": "2026-09-04",
+      "day": "Friday"
+    },
+    {
+      "name": "Ganesh Chaturthi",
+      "date": "2026-09-14",
+      "day": "Monday"
+    },
+    {
+      "name": "Mahatma Gandhi's Birthday",
+      "date": "2026-10-02",
+      "day": "Friday"
+    },
+    {
+      "name": "Dussehra / Vijaya Dashmi",
+      "date": "2026-10-20",
+      "day": "Tuesday"
+    },
+    {
+      "name": "Diwali",
+      "date": "2026-11-08",
+      "day": "Sunday"
+    },
+    {
+      "name": "Guru Nanak's Birthday",
+      "date": "2026-11-24",
+      "day": "Tuesday"
+    },
+    {
+      "name": "Christmas",
+      "date": "2026-12-25",
+      "day": "Friday"
+    }
+  ]
+}

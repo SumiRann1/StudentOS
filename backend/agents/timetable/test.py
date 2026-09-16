@@ -6,11 +6,11 @@ backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
-from agents.timetable.graph import build_graph
+from agents.timetable.graph import build_timetable_graph
 from state import AgentState
 from langchain_core.messages import HumanMessage
 
-timetable_graph = build_graph(AgentState)
+timetable_graph = build_timetable_graph(AgentState)
 
 config = {"configurable": {"thread_id": "1"}}
 
