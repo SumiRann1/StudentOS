@@ -22,10 +22,10 @@ const PROMPT_CARDS = [
     prompt: 'Check my unread student emails',
   },
   {
-    icon: '📝',
-    title: 'Study & Planning',
-    desc: 'Organize exam prep & study timetables',
-    prompt: 'Help me plan my study schedule for exams',
+    icon: '📄',
+    title: 'Grade & Document OCR',
+    desc: 'Upload notes or grade sheets for Groq Vision OCR',
+    isOcr: true,
   },
 ];
 
@@ -50,7 +50,7 @@ const calculateGreeting = () => {
   }
 };
 
-export default function ClaudeLandingHero({ userName, onSelectPrompt }) {
+export default function ClaudeLandingHero({ userName, onSelectPrompt, onOpenOcrModal }) {
   const [greeting, setGreeting] = React.useState(() => calculateGreeting());
 
   React.useEffect(() => {
@@ -80,7 +80,13 @@ export default function ClaudeLandingHero({ userName, onSelectPrompt }) {
           <TouchableOpacity
             key={idx}
             style={styles.card}
-            onPress={() => onSelectPrompt(card.prompt)}
+            onPress={() => {
+              if (card.isOcr && onOpenOcrModal) {
+                onOpenOcrModal();
+              } else if (onSelectPrompt) {
+                onSelectPrompt(card.prompt);
+              }
+            }}
             activeOpacity={0.7}
           >
             <View style={styles.cardHeader}>

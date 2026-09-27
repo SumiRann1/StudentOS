@@ -8,7 +8,16 @@ if current_dir not in sys.path:
 
 load_dotenv()
 
-os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
+os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY", "")
+os.environ["GEMINI_API_KEY"] = os.getenv("GEMINI_API_KEY", "")
+
+def get_gemini_vision_url() -> str:
+    if not os.environ["GEMINI_API_KEY"]:
+        raise ValueError(
+            "GEMINI_API_KEY is missing in your .env file. "
+            "Please create a free API key at https://aistudio.google.com and set GEMINI_API_KEY=AIzaSy... in .env"
+        )
+    return f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={os.environ['GEMINI_API_KEY']}"
 
 from pydantic import BaseModel, Field
 from typing import List, Literal
@@ -31,6 +40,7 @@ email_llm_with_tools = email_llm.bind_tools(email_tools)
 classroom_llm = ChatGroq(model="openai/gpt-oss-120b")
 classroom_llm_with_tools = classroom_llm.bind_tools(classroom_tools)
 
+grader_llm = ChatGroq(model="openai/gpt-oss-120b")
 
 from datetime import datetime
 from zoneinfo import ZoneInfo

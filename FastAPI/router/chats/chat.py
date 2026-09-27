@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 chat_router = APIRouter(prefix="/chat", tags=["Chat"])
 agent = build_orchastetor_graph(AgentState)
 
-
 async def generate_agent_stream(query: str, thread_id: str, state: dict, config: dict):
     """Async generator for streaming agent output token-by-token as Server-Sent Events (SSE)."""
     try:

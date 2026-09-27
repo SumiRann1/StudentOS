@@ -81,7 +81,7 @@ async def trigger_auth(service: str):
         token_exists = os.path.exists(token_path)
         return AuthTriggerResponse(
             success=False,
-            message=f"Authentication required for '{service}': {str(e)}. You can also run 'python scripts/authenticate_oauth.py --service {service}' in terminal.",
+            message=f"Authentication required for '{service}': {str(e)}. You can also run 'python scripts/authenticate_oauth.py --service {service}' in terminal (For Local Setup).",
             token_exists=token_exists
         )
 

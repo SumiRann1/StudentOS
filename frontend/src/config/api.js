@@ -1,12 +1,12 @@
 import { Platform } from 'react-native';
 
 // Host IP address for mobile devices running Expo Go on the local Wi-Fi network.
-// Change this to your computer's IP address if running on a physical mobile phone.
-export const DEV_HOST_IP = '10.30.5.161';
-export const DEV_PORT = '8000';
+// Configured via EXPO_PUBLIC_DEV_HOST_IP in .env file.
+export const DEV_HOST_IP = process.env.EXPO_PUBLIC_DEV_HOST_IP || 'localhost';
+export const DEV_PORT = process.env.EXPO_PUBLIC_DEV_PORT || '8000';
 
 export const getApiBaseUrl = () => {
-  //If explicitly provided via environment variable
+  // If explicitly provided via environment variable (e.g. Render production URL)
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
@@ -21,3 +21,6 @@ export const getApiBaseUrl = () => {
 };
 
 export const API_BASE_URL = getApiBaseUrl();
+
+
+

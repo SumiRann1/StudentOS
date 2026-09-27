@@ -4,8 +4,9 @@ import { colors } from './src/theme/colors';
 import Header from './src/components/Header';
 import MessageItem from './src/components/MessageItem';
 import ChatInput from './src/components/ChatInput';
-import ClaudeLandingHero from './src/components/ClaudeLandingHero';
+import ClaudeLandingHero from './src/components/LandingHero';
 import SetupModal from './src/components/SetupModal';
+import OcrModal from './src/components/OcrModal';
 import SidebarDrawer from './src/components/SidebarDrawer';
 import LoginScreen from './src/components/LoginScreen';
 import { streamAgentResponse, fetchChatInfo, fetchUserThreads, fetchThreadMessages } from './src/services/chatStream';
@@ -30,6 +31,7 @@ export default function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [isSetupVisible, setIsSetupVisible] = useState(false);
+  const [isOcrModalVisible, setIsOcrModalVisible] = useState(false);
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [userSession, setUserSession] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -332,7 +334,11 @@ export default function App() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {messages.length === 0 ? (
-          <ClaudeLandingHero userName={getUserDisplayName()} onSelectPrompt={(promptText) => handleSend(promptText)} />
+          <ClaudeLandingHero
+            userName={getUserDisplayName()}
+            onSelectPrompt={(promptText) => handleSend(promptText)}
+            onOpenOcrModal={() => setIsOcrModalVisible(true)}
+          />
         ) : (
           <FlatList
             ref={flatListRef}
@@ -380,6 +386,13 @@ export default function App() {
           setIsSetupVisible(false);
           checkServerHealth();
         }}
+      />
+
+      {/* Grade & Document OCR Modal */}
+      <OcrModal
+        visible={isOcrModalVisible}
+        onClose={() => setIsOcrModalVisible(false)}
+        userName={getUserDisplayName()}
       />
     </View>
   );

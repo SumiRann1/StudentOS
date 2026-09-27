@@ -5,8 +5,8 @@ __pycache__/
 venv/
 .venv/
 *.env
+.env*
 
-*.md
 
 # Node & Frontend
 node_modules/
@@ -25,3 +25,7 @@ data/*_token.json
 .DS_Store
 Thumbs.db
 *.db
+
+
+*.png
+*.md
