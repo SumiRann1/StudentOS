@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, ActivityIndicator, Platform, StatusBar, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image, ActivityIndicator, Platform, StatusBar, Dimensions, ScrollView } from 'react-native';
 import { colors } from '../theme/colors';
 import { startOAuthLogin } from '../services/authApi';
 
@@ -21,7 +21,12 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
       <StatusBar barStyle="light-content" backgroundColor="#0A0914" />
 
       {/* Cosmic Top Orbital Glow Graphic Elements */}
@@ -111,13 +116,18 @@ export default function LoginScreen() {
           By signing in, you agree to our <Text style={styles.termsLink}>Terms</Text> & <Text style={styles.termsLink}>Privacy Policy</Text>.
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
+    width: '100%',
+    backgroundColor: '#0A0914',
+  },
+  container: {
+    flexGrow: 1,
     width: '100%',
     backgroundColor: '#0A0914',
     justifyContent: 'space-between',

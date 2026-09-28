@@ -27,5 +27,6 @@ Thumbs.db
 *.db
 
 
+!frontend/assets/*.png
 *.png
 *.md

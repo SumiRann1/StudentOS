@@ -24,4 +24,4 @@ services:
       - key: LANGCHAIN_API_KEY
         sync: false
       - key: LANGCHAIN_PROJECT
-        value: "StudentOS v4"
+        value: "StudentOS v5"

@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Animated, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { colors } from '../theme/colors';
-import { startOAuthLogin } from '../services/authApi';
 import { pinThread, unpinThread, deleteThread } from '../services/chatStream';
+import { fetchSchedulerJobs } from '../services/schedulerApi';
 
 const getKolkataTime = () => {
   try {
@@ -18,6 +18,12 @@ const getKolkataTime = () => {
   }
 };
 
+const AUTOMATION_LIST = [
+  { id: 'email', icon: '✉️', title: 'Email Digest', time: '1:00 AM IST', threadId: 'default_email_Student' },
+  { id: 'classroom', icon: '📚', title: 'Classroom Pending', time: '2:00 AM IST', threadId: 'default_classroom_Student' },
+  { id: 'timetable', icon: '📅', title: "Today's Schedule", time: '3:00 AM IST', threadId: 'default_tt_Student' },
+];
+
 export default function SidebarDrawer({
   visible,
   onClose,
@@ -31,21 +37,32 @@ export default function SidebarDrawer({
   onSelectChat,
   activeThreadId,
   onRefreshThreads,
+  onTriggerAutomation,
+  runningJob,
 }) {
-  const [currentTime, setCurrentTime] = React.useState(() => getKolkataTime());
+  const [currentTime, setCurrentTime] = useState(() => getKolkataTime());
+  const [schedulerStatus, setSchedulerStatus] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible) {
       if (onRefreshThreads) {
         onRefreshThreads();
       }
       setCurrentTime(getKolkataTime());
+      loadSchedulerStatus();
       const timer = setInterval(() => {
         setCurrentTime(getKolkataTime());
       }, 1000);
       return () => clearInterval(timer);
     }
   }, [visible]);
+
+  const loadSchedulerStatus = async () => {
+    const data = await fetchSchedulerJobs();
+    if (data) {
+      setSchedulerStatus(data);
+    }
+  };
 
   const handleNewChatPress = () => {
     onNewChat();
@@ -141,6 +158,41 @@ export default function SidebarDrawer({
 
           {/* Scrollable Main Drawer Content */}
           <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            
+            {/* ⚡ Daily Automations Control Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>⚡ Daily Automations</Text>
+              {AUTOMATION_LIST.map((auto) => {
+                const isRunning = runningJob === auto.id;
+                return (
+                  <TouchableOpacity
+                    key={auto.id}
+                    style={styles.autoRow}
+                    disabled={!!runningJob}
+                    onPress={() => {
+                      onClose();
+                      if (onTriggerAutomation) {
+                        onTriggerAutomation(auto.id);
+                      }
+                    }}
+                  >
+                    <Text style={styles.autoIcon}>{auto.icon}</Text>
+                    <View style={styles.autoInfo}>
+                      <Text style={styles.autoTitle}>{auto.title}</Text>
+                      <Text style={styles.autoTime}>{auto.time}</Text>
+                    </View>
+                    {isRunning ? (
+                      <ActivityIndicator size="small" color={colors.primary} />
+                    ) : (
+                      <View style={styles.autoTriggerBadge}>
+                        <Text style={styles.autoTriggerText}>Run</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
             {/* Pinned Chats Section */}
             {pinnedChats.length > 0 && (
               <View style={styles.section}>
@@ -152,7 +204,7 @@ export default function SidebarDrawer({
             {/* Recent Chats Section */}
             {unpinnedChats.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>💬 Recent Chats (24h)</Text>
+                <Text style={styles.sectionTitle}>💬 Recent Chats</Text>
                 {unpinnedChats.map(renderChatItem)}
               </View>
             )}
@@ -200,7 +252,7 @@ export default function SidebarDrawer({
                 )}
               </View>
             )}
-            <Text style={styles.footerText}>Student OS v4 • AI Assistant</Text>
+            <Text style={styles.footerText}>Student OS v5 • AI Assistant</Text>
           </View>
         </View>
       </View>
@@ -265,7 +317,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.cardBorder,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   newChatIcon: {
     color: colors.textPrimary,
@@ -336,8 +388,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   section: {
-    marginBottom: 20,
-    paddingBottom: 16,
+    marginBottom: 16,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: colors.cardBorder,
   },
@@ -348,6 +400,47 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
     letterSpacing: 0.5,
+  },
+  autoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  autoIcon: {
+    fontSize: 15,
+    marginRight: 10,
+  },
+  autoInfo: {
+    flex: 1,
+  },
+  autoTitle: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  autoTime: {
+    color: colors.primary,
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  autoTriggerBadge: {
+    backgroundColor: 'rgba(16, 163, 127, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 163, 127, 0.3)',
+  },
+  autoTriggerText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: '600',
   },
   statusRow: {
     flexDirection: 'row',
@@ -367,7 +460,7 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
     backgroundColor: colors.background,
     paddingVertical: 7,
     paddingHorizontal: 10,
@@ -391,27 +484,27 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 8,
     borderRadius: 8,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   menuItemIcon: {
-    fontSize: 16,
+    fontSize: 15,
     marginRight: 12,
   },
   menuItemText: {
     color: colors.textPrimary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   footer: {
-    paddingTop: 12,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: colors.cardBorder,
   },
   userProfileBox: {
-    marginBottom: 8,
+    marginBottom: 6,
     padding: 8,
     backgroundColor: colors.background,
     borderRadius: 8,
@@ -420,17 +513,17 @@ const styles = StyleSheet.create({
   },
   userNameText: {
     color: colors.textPrimary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     marginBottom: 2,
   },
   userEmailText: {
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 10,
   },
   footerText: {
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 10,
     textAlign: 'center',
   },
 });

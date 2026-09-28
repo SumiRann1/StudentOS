@@ -3,13 +3,14 @@
     "name": "Student OS",
     "slug": "student-os-v3",
     "scheme": "studentos",
-    "version": "4.0.0",
+    "version": "5.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#171717",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sumirann1.studentos"
     },
     "android": {
       "softwareKeyboardLayoutMode": "resize",

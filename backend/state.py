@@ -71,7 +71,7 @@ Analyze the extracted transcript/grade table below and calculate the student's G
 
 ### Strict Grading & Formatting Rules:
 1. **Graded Scale**:
-   - A+ = 10, A = 10, A- = 9, B = 8, B- = 7, C = 6, C- = 5, D = 4, F / FS = 0
+   - A+ = 10, A = 10, A- = 9, B = 8, B- = 7, C = 6, C- = 5, D = 4, D- = 2, F / FS = 0
 2. **Exclusion of Non-Graded Courses**:
    - EXCLUDE all Non-graded / Satisfactory courses (grades 'S', 'N', 'P', or Category 'Non-graded' such as NCN100, NCN102, LAN102, LAN103) completely from the GPA formula and table breakdown.
 3. **Clean Text Math Notation (CRITICAL)**:

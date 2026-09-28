@@ -12,6 +12,7 @@ import LoginScreen from './src/components/LoginScreen';
 import { streamAgentResponse, fetchChatInfo, fetchUserThreads, fetchThreadMessages } from './src/services/chatStream';
 import { fetchSetupStatus } from './src/services/setupApi';
 import { fetchUserProfile } from './src/services/authApi';
+import { triggerJobOnDemand } from './src/services/schedulerApi';
 import { storage } from './src/services/storage';
 
 const generateUUID = () => {
@@ -299,6 +300,82 @@ export default function App() {
     });
   };
 
+  const [runningJob, setRunningJob] = useState(null);
+
+  const handleTriggerAutomation = async (jobName, customPrompt) => {
+    if (runningJob) return;
+    setRunningJob(jobName);
+
+    const titles = {
+      email: '✉️ Daily Email Digest',
+      classroom: '📚 Classroom Deadlines Digest',
+      timetable: "📅 Today's Timetable Digest",
+    };
+    const promptText = customPrompt || `⚡ Triggering ${titles[jobName] || jobName} automation...`;
+
+    const userMsgId = generateUUID();
+    const agentMsgId = generateUUID();
+
+    const threadPrefix = jobName === 'timetable' ? 'default_tt' : `default_${jobName}`;
+    threadIdRef.current = `${threadPrefix}_${getUserDisplayName()}`;
+    setActiveTitle(titles[jobName] || `Automation (${jobName})`);
+
+    const newMessages = [
+      {
+        id: userMsgId,
+        sender: 'user',
+        text: promptText,
+      },
+      {
+        id: agentMsgId,
+        sender: 'agent',
+        text: `⚡ Running ${titles[jobName] || jobName} automation in background...`,
+        toolCalls: [{ name: `job_${jobName}`, args: { status: 'running' } }],
+        isStreaming: true,
+      },
+    ];
+
+    setMessages(newMessages);
+    scrollToBottom();
+
+    try {
+      const res = await triggerJobOnDemand(jobName);
+      const responseText = res?.response || res?.error || 'Automation completed successfully.';
+
+      setMessages([
+        {
+          id: userMsgId,
+          sender: 'user',
+          text: promptText,
+        },
+        {
+          id: agentMsgId,
+          sender: 'agent',
+          text: responseText,
+          toolCalls: [],
+          isStreaming: false,
+        },
+      ]);
+    } catch (e) {
+      setMessages([
+        {
+          id: userMsgId,
+          sender: 'user',
+          text: promptText,
+        },
+        {
+          id: agentMsgId,
+          sender: 'agent',
+          text: `⚠️ Automation error: ${e.message}`,
+          isStreaming: false,
+        },
+      ]);
+    } finally {
+      setRunningJob(null);
+      loadUserThreadsFromBackend();
+    }
+  };
+
   const firstUserMsg = messages.find((m) => m.sender === 'user');
   const chatTopic = activeTitle || (firstUserMsg ? firstUserMsg.text : 'Student OS');
 
@@ -338,6 +415,8 @@ export default function App() {
             userName={getUserDisplayName()}
             onSelectPrompt={(promptText) => handleSend(promptText)}
             onOpenOcrModal={() => setIsOcrModalVisible(true)}
+            onTriggerAutomation={handleTriggerAutomation}
+            runningJob={runningJob}
           />
         ) : (
           <FlatList
@@ -357,7 +436,7 @@ export default function App() {
           query={query}
           setQuery={setQuery}
           onSend={() => handleSend()}
-          disabled={isStreaming}
+          disabled={isStreaming || !!runningJob}
           onFocus={scrollToBottom}
           showChips={messages.length > 0}
         />
@@ -377,6 +456,8 @@ export default function App() {
         onSelectChat={handleSelectChat}
         activeThreadId={threadIdRef.current}
         onRefreshThreads={loadUserThreadsFromBackend}
+        onTriggerAutomation={handleTriggerAutomation}
+        runningJob={runningJob}
       />
 
       {/* Credentials & Service Setup Modal */}
