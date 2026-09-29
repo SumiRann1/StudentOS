@@ -84,6 +84,10 @@ app.include_router(auth_router)
 async def root():
     return {"message": "Student OS Agent API is running."}
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 @app.get("/scheduler")
 async def show_all_jobs():
     jobs = scheduler.get_jobs()
