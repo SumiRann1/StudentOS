@@ -67,10 +67,10 @@ def get_gmail_service():
 
         if not creds or not creds.valid:
             # If running on Render or non-interactive server, do NOT block process with run_local_server
-            if os.getenv("RENDER") or os.getenv("PORT") or os.getenv("HEADLESS"):
+            if os.getenv("ANTIDEPLOY") or os.getenv("PORT"):
                 raise RuntimeError(
                     "Gmail OAuth token is missing or invalid on the server. "
-                    "Please upload your email_oauth_token.json via the app Setup menu or set EMAIL_OAUTH_TOKEN_JSON on Render."
+                    "Please upload your email_oauth_token.json via the app Setup menu or set EMAIL_OAUTH_TOKEN_JSON on Antideploy."
                 )
 
             if not os.path.exists(CREDENTIALS_PATH):

@@ -6,7 +6,7 @@ export const DEV_HOST_IP = process.env.EXPO_PUBLIC_DEV_HOST_IP || 'localhost';
 export const DEV_PORT = process.env.EXPO_PUBLIC_DEV_PORT || '8000';
 
 export const getApiBaseUrl = () => {
-  // If explicitly provided via environment variable (e.g. Render production URL)
+  // If explicitly provided via environment variable (e.g. Antideploy production URL)
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }

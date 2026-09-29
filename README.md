@@ -79,7 +79,7 @@
 ### Backend Engineering Highlights (`backend.md`)
 1. **Server-Sent Events (SSE) Streaming**: `StreamingResponse` using LangGraph's `astream_events(version="v2")` streams AI responses token-by-token alongside live tool execution status badges (`⚡ search_emails`, `⚡ get_upcoming_assignments`).
 2. **LangGraph Multi-Agent Routing**: Central Router Agent inspects conversation history and dynamically routes queries to specialized sub-agents (`Email`, `Classroom`, `Timetable`, `General`).
-3. **Google API Security & Headless Support**: OAuth 2.0 token management supporting interactive desktop flows as well as headless server environments (Render environment variables `CLASSROOM_OAUTH_TOKEN_JSON` and `EMAIL_OAUTH_TOKEN_JSON`).
+3. **Google API Security & Headless Support**: OAuth 2.0 token management supporting interactive desktop flows as well as headless server environments (Antideploy environment variables `CLASSROOM_OAUTH_TOKEN_JSON` and `EMAIL_OAUTH_TOKEN_JSON`).
 4. **Asia/Kolkata Timezone Engine**: Converts raw UTC timestamps into student local IST times (`YYYY-MM-DD hh:mm AM/PM`) and parses relative time expressions (*"5 hours ago"*).
 
 ---

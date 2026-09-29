@@ -101,7 +101,7 @@ def save_user_to_db(user, session=None):
         logger.warning(f"Failed to upsert user info to users_info table: {e}")
 
 def get_default_callback_url(request: Request) -> str:
-    base_url = os.getenv("SERVER_URL") or os.getenv("RENDER_EXTERNAL_URL")
+    base_url = os.getenv("SERVER_URL") or os.getenv("ANTIDEPLOY_URL")
     if base_url:
         return f"{base_url.rstrip('/')}/auth/callback"
     return f"{str(request.base_url).rstrip('/')}/auth/callback"
