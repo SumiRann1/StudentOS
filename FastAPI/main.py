@@ -16,6 +16,7 @@ from FastAPI.router.chats.chat import chat_router
 from FastAPI.router.chats.grader_api import grader_router
 from FastAPI.router.setup.setup import setup_router
 from FastAPI.router.auth.auth import auth_router
+from FastAPI.router.dashboard.dashboard import dashboard_router
 from backend.automation.classroom import create_classroom_jobs
 from backend.automation.timetable import create_timetable_jobs
 from backend.automation.email import create_email_jobs
@@ -24,6 +25,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from db.database import init_db
 import logging
+import asyncio
 from contextlib import asynccontextmanager
 
 logging.basicConfig(level=logging.INFO)
@@ -45,15 +47,25 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("SQLite database initialized successfully!")
 
-    scheduler.add_job(create_email_jobs, 'cron', hour=1, id="email_daily",
+    scheduler.add_job(create_email_jobs, 'interval', hours=1, id="email_daily",
                       misfire_grace_time=60, coalesce=True, replace_existing=True)
-    scheduler.add_job(create_classroom_jobs, 'cron', hour=2, id="classroom_daily",
+    scheduler.add_job(create_classroom_jobs, 'interval', hours=1, id="classroom_daily",
                       misfire_grace_time=60, coalesce=True, replace_existing=True)
     scheduler.add_job(create_timetable_jobs, 'cron', hour=3, id="timetable_daily",
                       misfire_grace_time=60, coalesce=True, replace_existing=True)
 
     scheduler.start()
-    logger.info("APScheduler started with 3 daily automation jobs")
+    logger.info("APScheduler started with background automation jobs")
+
+    logger.info("Triggering startup auto-sync...")
+    try:
+        await create_email_jobs()
+        await create_classroom_jobs()
+        await create_timetable_jobs()
+        logger.info("✅ Startup sync completed successfully.")
+    except Exception as e:
+        logger.warning(f"❌ Startup sync warning: {e}")
+
     try:
         yield
     finally:
@@ -79,6 +91,7 @@ app.include_router(chat_router)
 app.include_router(grader_router)
 app.include_router(setup_router)
 app.include_router(auth_router)
+app.include_router(dashboard_router)
 
 @app.get("/")
 async def root():

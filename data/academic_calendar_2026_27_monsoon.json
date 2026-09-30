@@ -1,111 +1,357 @@
 {
-  "semester": "2026-27 Monsoon",
-  "events": [
+  "semesters": [
     {
-      "sNo": 1,
-      "event": "Reporting and Registration of New students",
-      "date": "23/07/2026(Thu)"
+      "semester": "2026-27 Monsoon",
+      "events": [
+        {
+          "sNo": 1,
+          "event": "Reporting and Registration of New students",
+          "date": "23/07/2026(Thu)"
+        },
+        {
+          "sNo": 2,
+          "event": "Orientation for new students",
+          "date": "24/07/2026(Fri) - 27/07/2026(Mon)"
+        },
+        {
+          "sNo": 3,
+          "event": "Academic Registration for New students",
+          "date": "27/07/2026(Mon)"
+        },
+        {
+          "sNo": 4,
+          "event": "Registration for old students",
+          "date": "27/07/2026(Mon)"
+        },
+        {
+          "sNo": 5,
+          "event": "Last date of Late Registration with fine (Old students only) (New students are not permitted for late registration)",
+          "date": "28/07/2026(Tue)",
+          "note": "On 28/07/2026 - Fine Rs. 1000/-. After 28/07/2026 - additional fine of Rs. 2000/- per day allowed till 31/07/2026(Fri)"
+        },
+        {
+          "sNo": 6,
+          "event": "Commencement of classes",
+          "date": "28/07/2026(Tue)"
+        },
+        {
+          "sNo": 7,
+          "event": "Add and Drop of Courses",
+          "date": "28/07/2026(Tue) - 03/08/2026(Mon)"
+        },
+        {
+          "sNo": 8,
+          "event": "Mid-semester Examinations",
+          "date": "18/09/2026(Fri) - 25/09/2026(Fri)"
+        },
+        {
+          "sNo": 9,
+          "event": "Last date to share marks of Mid-semester exams",
+          "date": "05/10/2026(Mon)"
+        },
+        {
+          "sNo": 10,
+          "event": "Mid-Semester break",
+          "date": "17/10/2026(Sat) - 25/10/2026(Sun)"
+        },
+        {
+          "sNo": 11,
+          "event": "Pre-registration for next semester",
+          "date": "17/11/2026(Tue)"
+        },
+        {
+          "sNo": 12,
+          "event": "Last teaching day",
+          "date": "23/11/2026(Mon)"
+        },
+        {
+          "sNo": 13,
+          "event": "End-semester Examinations",
+          "date": "25/11/2026(Wed) - 02/12/2026(Wed)"
+        },
+        {
+          "sNo": 14,
+          "event": "Last date for the Grades to be submitted online on the Portal",
+          "date": "09/12/2026(Wed)"
+        },
+        {
+          "sNo": 15,
+          "event": "Research Seminar",
+          "date": "25/11/2026(Wed) - 08/12/2026(Tue)"
+        },
+        {
+          "sNo": 16,
+          "event": "Wholesome Thesis Evaluation (Only for MTech)",
+          "date": "15/12/2026(Tue)"
+        },
+        {
+          "sNo": 17,
+          "event": "Vacation (Only for BTech and MSc students)",
+          "date": "03/12/2026(Thu) - 27/12/2026(Sun)"
+        },
+        {
+          "sNo": 18,
+          "event": "Vacation (Only for MTech and PhD students)",
+          "date": "09/12/2026(Wed) - 27/12/2026(Sun)"
+        },
+        {
+          "sNo": 19,
+          "event": "Last date for submission of PhD/MTech Thesis grades",
+          "date": "09/12/2026(Wed)"
+        },
+        {
+          "sNo": 20,
+          "event": "Supplementary Examination",
+          "date": "23/12/2026(Wed) - 24/12/2026(Thu)"
+        },
+        {
+          "sNo": 21,
+          "event": "Registration for next semester",
+          "date": "28/12/2026(Mon)"
+        }
+      ]
     },
     {
-      "sNo": 2,
-      "event": "Orientation for new students",
-      "date": "24/07/2026(Fri) - 27/07/2026(Mon)"
+      "semester": "2026-27 Winter",
+      "events": [
+        {
+          "sNo": 1,
+          "event": "Reporting and Registration of New students",
+          "date": "04/01/2027(Mon)"
+        },
+        {
+          "sNo": 2,
+          "event": "Orientation for new students",
+          "date": "04/01/2027(Mon)"
+        },
+        {
+          "sNo": 3,
+          "event": "Academic Registration for New students",
+          "date": "04/01/2027(Mon)"
+        },
+        {
+          "sNo": 4,
+          "event": "Administrative Registration for old students",
+          "date": "04/01/2027(Mon)"
+        },
+        {
+          "sNo": 5,
+          "event": "Late Registration with fine (Old students only) (New students are not permitted for late registration)",
+          "date": "05/01/2027(Tue)",
+          "note": "On 05/01/2027 - Fine Rs. 1000/-. After 05/01/2027 - additional fine of Rs. 2000/- per day allowed till 08/01/2027(Fri)"
+        },
+        {
+          "sNo": 6,
+          "event": "Commencement of classes",
+          "date": "05/01/2027(Tue)"
+        },
+        {
+          "sNo": 7,
+          "event": "Add and Drop of Courses",
+          "date": "05/01/2027(Tue) - 11/01/2027(Mon)"
+        },
+        {
+          "sNo": 8,
+          "event": "Mid-semester Examinations",
+          "date": "22/02/2027(Mon) - 01/03/2027(Mon)"
+        },
+        {
+          "sNo": 9,
+          "event": "Last date to share marks of Mid-semester exams",
+          "date": "08/03/2027(Mon)"
+        },
+        {
+          "sNo": 10,
+          "event": "Last date for course withdrawal",
+          "date": "10/03/2027(Wed)"
+        },
+        {
+          "sNo": 11,
+          "event": "Mid-Semester break",
+          "date": "20/03/2027(Sat) - 28/03/2027(Sun)"
+        },
+        {
+          "sNo": 12,
+          "event": "Pre-registration for next semester",
+          "date": "06/04/2027(Tue)"
+        },
+        {
+          "sNo": 13,
+          "event": "Last teaching day",
+          "date": "29/04/2027(Thu)"
+        },
+        {
+          "sNo": 14,
+          "event": "End-semester Examinations",
+          "date": "30/04/2027(Fri) - 07/05/2027(Fri)"
+        },
+        {
+          "sNo": 15,
+          "event": "Grades to be submitted online on the Portal",
+          "date": "14/05/2027(Fri)"
+        },
+        {
+          "sNo": 16,
+          "event": "Research Seminar (MTech & PhD)",
+          "date": "01/06/2027(Tue) - 15/06/2027(Tue)"
+        },
+        {
+          "sNo": 17,
+          "event": "Wholesome thesis evaluation for MTech",
+          "date": "01/06/2027(Tue) - 15/06/2027(Tue)"
+        },
+        {
+          "sNo": 18,
+          "event": "Vacation (Only for BTech and MSc students)",
+          "date": "08/05/2027(Sat) - 25/07/2027(Sun)"
+        },
+        {
+          "sNo": 19,
+          "event": "Vacation (Only for MTech and PhD students)",
+          "date": "16/06/2027(Wed) - 25/07/2027(Sun)"
+        },
+        {
+          "sNo": 20,
+          "event": "Last date for submission of PhD/MTech Thesis grades",
+          "date": "16/06/2027(Wed)"
+        },
+        {
+          "sNo": 21,
+          "event": "Last date for submission of MTech Thesis & WTE report",
+          "date": "07/07/2027(Wed)"
+        },
+        {
+          "sNo": 22,
+          "event": "Supplementary Examination",
+          "date": "01/06/2027(Tue) - 03/06/2027(Thu)"
+        },
+        {
+          "sNo": 23,
+          "event": "Registration for next semester",
+          "date": "17/05/2027(Mon)"
+        }
+      ]
     },
     {
-      "sNo": 3,
-      "event": "Academic Registration for New students",
-      "date": "27/07/2026(Mon)"
-    },
-    {
-      "sNo": 4,
-      "event": "Registration for old students",
-      "date": "27/07/2026(Mon)"
-    },
-    {
-      "sNo": 5,
-      "event": "Last date of Late Registration with fine (Old students only) (New students are not permitted for late registration)",
-      "date": "28/07/2026(Tue)",
-      "note": "On 28/07/2026 - Fine Rs. 1000/-. After 28/07/2026 - additional fine of Rs. 2000/- per day allowed till 31/07/2026(Fri)"
-    },
-    {
-      "sNo": 6,
-      "event": "Commencement of classes",
-      "date": "28/07/2026(Tue)"
-    },
-    {
-      "sNo": 7,
-      "event": "Add and Drop of Courses",
-      "date": "28/07/2026(Tue) - 03/08/2026(Mon)"
-    },
-    {
-      "sNo": 8,
-      "event": "Mid-semester Examinations",
-      "date": "18/09/2026(Fri) - 25/09/2026(Fri)"
-    },
-    {
-      "sNo": 9,
-      "event": "Last date to share marks of Mid-semester exams",
-      "date": "05/10/2026(Mon)"
-    },
-    {
-      "sNo": 10,
-      "event": "Mid-Semester break",
-      "date": "17/10/2026(Sat) - 25/10/2026(Sun)"
-    },
-    {
-      "sNo": 11,
-      "event": "Pre-registration for next semester",
-      "date": "17/11/2026(Tue)"
-    },
-    {
-      "sNo": 12,
-      "event": "Last teaching day",
-      "date": "23/11/2026(Mon)"
-    },
-    {
-      "sNo": 13,
-      "event": "End-semester Examinations",
-      "date": "25/11/2026(Wed) - 02/12/2026(Wed)"
-    },
-    {
-      "sNo": 14,
-      "event": "Last date for the Grades to be submitted online on the Portal",
-      "date": "09/12/2026(Wed)"
-    },
-    {
-      "sNo": 15,
-      "event": "Research Seminar",
-      "date": "25/11/2026(Wed) - 08/12/2026(Tue)"
-    },
-    {
-      "sNo": 16,
-      "event": "Wholesome Thesis Evaluation (Only for MTech)",
-      "date": "15/12/2026(Tue)"
-    },
-    {
-      "sNo": 17,
-      "event": "Vacation (Only for BTech and MSc students)",
-      "date": "03/12/2026(Thu) - 27/12/2026(Sun)"
-    },
-    {
-      "sNo": 18,
-      "event": "Vacation (Only for MTech and PhD students)",
-      "date": "09/12/2026(Wed) - 27/12/2026(Sun)"
-    },
-    {
-      "sNo": 19,
-      "event": "Last date for submission of PhD/MTech Thesis grades",
-      "date": "09/12/2026(Wed)"
-    },
-    {
-      "sNo": 20,
-      "event": "Supplementary Examination",
-      "date": "23/12/2026(Wed) - 24/12/2026(Thu)"
-    },
-    {
-      "sNo": 21,
-      "event": "Registration for next semester",
-      "date": "28/12/2026(Mon)"
+      "semester": "2027-28 Monsoon",
+      "events": [
+        {
+          "sNo": 1,
+          "event": "Reporting and Registration of New students",
+          "date": "26/07/2027(Mon)"
+        },
+        {
+          "sNo": 2,
+          "event": "Orientation for new students",
+          "date": "26/07/2027(Mon) - 29/07/2027(Thu)"
+        },
+        {
+          "sNo": 3,
+          "event": "Academic Registration for New students",
+          "date": "29/07/2027(Thu)"
+        },
+        {
+          "sNo": 4,
+          "event": "Administrative Registration for old students",
+          "date": "29/07/2027(Thu)"
+        },
+        {
+          "sNo": 5,
+          "event": "Late Registration with fine (Old students only) (New students are not permitted for late registration)",
+          "date": "30/07/2027(Fri)",
+          "note": "On 30/07/2027 - Fine Rs. 1000/-. After 30/07/2027 - additional fine of Rs. 2000/- per day allowed till 02/08/2027(Mon)"
+        },
+        {
+          "sNo": 6,
+          "event": "Commencement of classes",
+          "date": "30/07/2027(Fri)"
+        },
+        {
+          "sNo": 7,
+          "event": "Add and Drop of Courses",
+          "date": "30/07/2027(Fri) - 05/08/2027(Thu)"
+        },
+        {
+          "sNo": 8,
+          "event": "Mid-semester Examinations",
+          "date": "20/09/2027(Mon) - 27/09/2027(Mon)"
+        },
+        {
+          "sNo": 9,
+          "event": "Last date to share marks of Mid-semester exams",
+          "date": "04/10/2027(Mon)"
+        },
+        {
+          "sNo": 10,
+          "event": "Last date for course withdrawal",
+          "date": "06/10/2027(Wed)"
+        },
+        {
+          "sNo": 11,
+          "event": "Mid-Semester break",
+          "date": "02/10/2027(Sat) - 10/10/2027(Sun)"
+        },
+        {
+          "sNo": 12,
+          "event": "Pre-registration for next semester",
+          "date": "16/11/2027(Tue) - 17/11/2027(Wed)"
+        },
+        {
+          "sNo": 13,
+          "event": "Last teaching day",
+          "date": "23/11/2027(Tue)"
+        },
+        {
+          "sNo": 14,
+          "event": "End-semester Examinations",
+          "date": "24/11/2027(Wed) - 01/12/2027(Wed)"
+        },
+        {
+          "sNo": 15,
+          "event": "Grades to be submitted online on the Portal",
+          "date": "08/12/2027(Wed)"
+        },
+        {
+          "sNo": 16,
+          "event": "Research Seminar (MTech & PhD)",
+          "date": "26/11/2027(Fri) - 10/12/2027(Fri)"
+        },
+        {
+          "sNo": 17,
+          "event": "Wholesome thesis evaluation for MTech",
+          "date": "...."
+        },
+        {
+          "sNo": 18,
+          "event": "Vacation (Only for BTech and MSc students)",
+          "date": "02/12/2027(Thu) - 02/01/2028(Sun)"
+        },
+        {
+          "sNo": 19,
+          "event": "Vacation (Only for MTech and PhD students)",
+          "date": "11/12/2027(Sat) - 02/01/2028(Sun)"
+        },
+        {
+          "sNo": 20,
+          "event": "Last date for submission of PhD/MTech Thesis grades",
+          "date": "...."
+        },
+        {
+          "sNo": 21,
+          "event": "Last date for submission of MTech Thesis & WTE report",
+          "date": "13/12/2027(Mon)"
+        },
+        {
+          "sNo": 22,
+          "event": "Supplementary Examination",
+          "date": "27/12/2027(Mon) - 29/12/2027(Wed)"
+        },
+        {
+          "sNo": 23,
+          "event": "Registration for next semester",
+          "date": "03/01/2028(Mon)"
+        }
+      ]
     }
   ]
 }

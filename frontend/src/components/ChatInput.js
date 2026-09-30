@@ -9,7 +9,8 @@ const PROMPT_SUGGESTIONS = [
   { icon: '📝', text: 'Help me plan my study schedule' },
 ];
 
-export default function ChatInput({ query, setQuery, onSend, disabled, onFocus, showChips = true }) {
+export default function ChatInput({ query, setQuery, onSend, disabled, onFocus, showChips = true, onOpenOcr }) {
+  const [isFocused, setIsFocused] = React.useState(false);
   const canSend = query.trim().length > 0 && !disabled;
 
   return (
@@ -27,6 +28,7 @@ export default function ChatInput({ query, setQuery, onSend, disabled, onFocus, 
               style={styles.chip}
               onPress={() => setQuery(item.text)}
               disabled={disabled}
+              activeOpacity={0.7}
             >
               <Text style={styles.chipIcon}>{item.icon}</Text>
               <Text style={styles.chipText}>{item.text}</Text>
@@ -36,14 +38,30 @@ export default function ChatInput({ query, setQuery, onSend, disabled, onFocus, 
       )}
 
       {/* Floating Pill Input Bar (ChatGPT Style) */}
-      <View style={styles.pillContainer}>
+      <View style={[styles.pillContainer, isFocused && styles.pillContainerFocused]}>
+        {/* Quick OCR Attachment Button */}
+        {onOpenOcr && (
+          <TouchableOpacity
+            style={styles.attachButton}
+            onPress={onOpenOcr}
+            disabled={disabled}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.attachIcon}>📷</Text>
+          </TouchableOpacity>
+        )}
+
         <TextInput
           style={styles.input}
           placeholder="Message Student OS..."
           placeholderTextColor={colors.textMuted}
           value={query}
           onChangeText={setQuery}
-          onFocus={onFocus}
+          onFocus={() => {
+            setIsFocused(true);
+            if (onFocus) onFocus();
+          }}
+          onBlur={() => setIsFocused(false)}
           multiline
           maxLength={1000}
           editable={!disabled}
@@ -53,6 +71,7 @@ export default function ChatInput({ query, setQuery, onSend, disabled, onFocus, 
           style={[styles.sendButton, canSend ? styles.sendButtonActive : styles.sendButtonDisabled]}
           onPress={onSend}
           disabled={!canSend}
+          activeOpacity={0.8}
         >
           <Text style={[styles.sendIcon, canSend ? styles.sendIconActive : styles.sendIconDisabled]}>
             ↑
@@ -62,7 +81,7 @@ export default function ChatInput({ query, setQuery, onSend, disabled, onFocus, 
 
       {/* ChatGPT Style Disclaimer Footer */}
       <Text style={styles.disclaimerText}>
-        Student OS can make mistakes. Verify important academic info.
+        Student OS v5 • AI Academic Assistant • Verify key assignment dates
       </Text>
     </View>
   );
@@ -105,14 +124,31 @@ const styles = StyleSheet.create({
     width: '92%',
     maxWidth: 800,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     backgroundColor: colors.cardBackground,
     borderRadius: 26,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
     paddingHorizontal: 14,
     paddingVertical: 6,
     minHeight: 52,
+  },
+  pillContainerFocused: {
+    borderColor: colors.primary,
+  },
+  attachButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  attachIcon: {
+    fontSize: 14,
   },
   input: {
     flex: 1,

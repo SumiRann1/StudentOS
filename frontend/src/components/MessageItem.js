@@ -105,13 +105,21 @@ export default function MessageItem({ message }) {
 
   return (
     <View style={[styles.wrapper, isUser ? styles.userWrapper : styles.agentWrapper]}>
+      {/* Sender Avatar Badge */}
+      {!isUser && (
+        <View style={styles.agentAvatarContainer}>
+          <Text style={styles.avatarIcon}>🤖</Text>
+        </View>
+      )}
+
       <View style={[styles.bubble, isUser ? styles.userBubble : styles.agentBubble]}>
         {/* Render tool call execution status badges */}
         {message.toolCalls && message.toolCalls.length > 0 && (
           <View style={styles.toolsContainer}>
             {message.toolCalls.map((tool, idx) => (
               <View key={idx} style={styles.toolBadge}>
-                <Text style={styles.toolText}>⚡ {tool.name}</Text>
+                <Text style={styles.toolDot}>⚡</Text>
+                <Text style={styles.toolText}>{tool.name}</Text>
               </View>
             ))}
           </View>
@@ -133,6 +141,13 @@ export default function MessageItem({ message }) {
           </View>
         )}
       </View>
+
+      {/* User Avatar Badge */}
+      {isUser && (
+        <View style={styles.userAvatarContainer}>
+          <Text style={styles.avatarIcon}>👤</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -257,6 +272,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingHorizontal: 16,
     alignItems: 'flex-start',
+    gap: 10,
   },
   userWrapper: {
     justifyContent: 'flex-end',
@@ -264,22 +280,53 @@ const styles = StyleSheet.create({
   agentWrapper: {
     justifyContent: 'flex-start',
   },
+  agentAvatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    marginTop: 2,
+  },
+  userAvatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.4)',
+    marginTop: 2,
+  },
+  avatarIcon: {
+    fontSize: 15,
+  },
   bubble: {
-    maxWidth: '85%',
+    maxWidth: '82%',
   },
   userBubble: {
     backgroundColor: colors.userBubble,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 20,
-    borderBottomRightRadius: 4,
-    maxWidth: '85%',
+    borderTopRightRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.userBubbleBorder,
+    maxWidth: '80%',
   },
   agentBubble: {
-    backgroundColor: 'transparent',
-    paddingVertical: 2,
-    paddingHorizontal: 4,
-    maxWidth: '100%',
+    backgroundColor: colors.agentBubble,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderTopLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.agentBubbleBorder,
+    maxWidth: '85%',
     flex: 1,
   },
   agentContentContainer: {
@@ -292,12 +339,18 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   toolBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.toolBadgeBg,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.toolBadgeBorder,
+    gap: 4,
+  },
+  toolDot: {
+    fontSize: 11,
   },
   toolText: {
     color: colors.toolBadgeText,
@@ -334,7 +387,7 @@ const styles = StyleSheet.create({
   },
   thinkingText: {
     color: colors.textMuted,
-    fontSize: 14,
+    fontSize: 13,
     fontStyle: 'italic',
   },
 });

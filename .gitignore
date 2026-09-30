@@ -26,7 +26,4 @@ data/*_token.json
 Thumbs.db
 *.db
 
-
-!frontend/assets/*.png
-*.png
 *.md

@@ -47,6 +47,7 @@ export default function OcrModal({ visible, onClose, userName }) {
   const [previewUri, setPreviewUri] = useState(null);
   const [base64Data, setBase64Data] = useState(null);
   const [ocrResult, setOcrResult] = useState('');
+  const [parsedSections, setParsedSections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   
@@ -153,6 +154,15 @@ export default function OcrModal({ visible, onClose, userName }) {
       const data = await response.json();
       const answer = data.answered_text || data.extracted_text || 'No response generated.';
       setOcrResult(answer);
+      if (Array.isArray(data.sections) && data.sections.length > 0) {
+        setParsedSections(data.sections);
+      } else {
+        setParsedSections([
+          { id: 1, title: 'Summary & GPA', icon: '🏆', content: answer },
+          { id: 2, title: 'Course Table', icon: '📋', content: answer },
+          { id: 3, title: 'Calculation', icon: '🧮', content: answer },
+        ]);
+      }
       setActiveStep(1);
     } catch (err) {
       setErrorMsg(err.message || 'Failed to analyze transcript and calculate GPA.');
@@ -167,6 +177,7 @@ export default function OcrModal({ visible, onClose, userName }) {
     setPreviewUri(null);
     setBase64Data(null);
     setOcrResult('');
+    setParsedSections([]);
     setErrorMsg(null);
     setActiveStep(1);
   };
@@ -176,32 +187,11 @@ export default function OcrModal({ visible, onClose, userName }) {
     onClose();
   };
 
-  // Helper to parse 3 distinct sections from LLM response
-  const parseSections = (markdownText) => {
-    if (!markdownText) return [];
-
-    const rawParts = markdownText
-      .split(/---SECTION_\d+---/g)
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    if (rawParts.length >= 3) {
-      return [
-        { id: 1, title: 'Summary & GPA', icon: '🏆', content: rawParts[0] },
-        { id: 2, title: 'Course Table', icon: '📋', content: rawParts[1] },
-        { id: 3, title: 'Calculation', icon: '🧮', content: rawParts[2] },
-      ];
-    }
-
-    // Fallback if delimiters were missing
-    return [
-      { id: 1, title: 'Summary & GPA', icon: '🏆', content: markdownText },
-      { id: 2, title: 'Course Table', icon: '📋', content: markdownText },
-      { id: 3, title: 'Calculation', icon: '🧮', content: markdownText },
-    ];
-  };
-
-  const sections = parseSections(ocrResult);
+  const sections = parsedSections.length > 0 ? parsedSections : [
+    { id: 1, title: 'Summary & GPA', icon: '🏆', content: ocrResult },
+    { id: 2, title: 'Course Table', icon: '📋', content: ocrResult },
+    { id: 3, title: 'Calculation', icon: '🧮', content: ocrResult },
+  ];
   const currentSection = sections.find((s) => s.id === activeStep) || sections[0];
 
   return (

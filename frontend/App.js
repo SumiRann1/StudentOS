@@ -15,17 +15,6 @@ import { fetchUserProfile } from './src/services/authApi';
 import { triggerJobOnDemand } from './src/services/schedulerApi';
 import { storage } from './src/services/storage';
 
-const generateUUID = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-};
-
 export default function App() {
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
@@ -168,8 +157,8 @@ export default function App() {
     try {
       const dbMsgs = await fetchThreadMessages(chat.thread_id, getUserDisplayName());
       if (Array.isArray(dbMsgs) && dbMsgs.length > 0) {
-        const formatted = dbMsgs.map((m) => ({
-          id: m.id || generateUUID(),
+        const formatted = dbMsgs.map((m, idx) => ({
+          id: m.id || `msg_${Date.now()}_${idx}`,
           sender: m.sender,
           text: m.content,
         }));
@@ -197,19 +186,18 @@ export default function App() {
 
     setQuery('');
 
-    // Fetch chat info (AI title & thread_id) if starting a brand new thread
+    // Fetch chat info (AI title & thread_id) directly from backend if starting a brand new thread
     if (!threadIdRef.current) {
       const chatInfo = await fetchChatInfo(userText, getUserDisplayName(), null);
-      const threadId = chatInfo?.thread_id || generateUUID();
-      const title = chatInfo?.title || (userText.length > 35 ? `${userText.slice(0, 32)}...` : userText);
-
-      threadIdRef.current = threadId;
-      setActiveTitle(title);
-      loadUserThreadsFromBackend();
+      if (chatInfo && chatInfo.thread_id) {
+        threadIdRef.current = chatInfo.thread_id;
+        setActiveTitle(chatInfo.title || userText);
+        loadUserThreadsFromBackend();
+      }
     }
 
-    const userMsgId = generateUUID();
-    const agentMsgId = generateUUID();
+    const userMsgId = `usr_${Date.now()}`;
+    const agentMsgId = `agt_${Date.now()}`;
 
     const newMessages = [
       ...messages,
@@ -439,6 +427,7 @@ export default function App() {
           disabled={isStreaming || !!runningJob}
           onFocus={scrollToBottom}
           showChips={messages.length > 0}
+          onOpenOcr={() => setIsOcrModalVisible(true)}
         />
       </KeyboardAvoidingView>
 

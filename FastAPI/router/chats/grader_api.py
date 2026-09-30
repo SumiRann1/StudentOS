@@ -5,6 +5,25 @@ from FastAPI.router.chats.schemas import GraderOutput, Base64OCRRequest
 
 grader_router = APIRouter(prefix="/grader", tags=["Grader Agent"])
 
+import re
+from typing import List, Dict, Any
+
+def parse_ocr_sections(markdown_text: str) -> List[Dict[str, Any]]:
+    if not markdown_text:
+        return []
+    parts = [s.strip() for s in re.split(r"---SECTION_\d+---", markdown_text) if s.strip()]
+    if len(parts) >= 3:
+        return [
+            {"id": 1, "title": "Summary & GPA", "icon": "🏆", "content": parts[0]},
+            {"id": 2, "title": "Course Table", "icon": "📋", "content": parts[1]},
+            {"id": 3, "title": "Calculation", "icon": "🧮", "content": parts[2]},
+        ]
+    return [
+        {"id": 1, "title": "Summary & GPA", "icon": "🏆", "content": markdown_text},
+        {"id": 2, "title": "Course Table", "icon": "📋", "content": markdown_text},
+        {"id": 3, "title": "Calculation", "icon": "🧮", "content": markdown_text},
+    ]
+
 @grader_router.post("/ocr", response_model=GraderOutput)
 async def grader_ocr(payload: Base64OCRRequest):
     """
@@ -33,12 +52,13 @@ async def grader_ocr(payload: Base64OCRRequest):
     )
 
     final_answer = await answer_grades(payload.user_name, extracted_text)
-
+    sections = parse_ocr_sections(final_answer)
 
     return GraderOutput(
         filename=payload.filename or "uploaded_image.jpg",
         content_type=content_type,
-        answered_text=final_answer
+        answered_text=final_answer,
+        sections=sections
     )
 
 

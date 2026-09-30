@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Image, ScrollView, ActivityIndicator, TextInput } from 'react-native';
 import { colors } from '../theme/colors';
 import { pinThread, unpinThread, deleteThread } from '../services/chatStream';
 import { fetchSchedulerJobs } from '../services/schedulerApi';
@@ -42,6 +42,7 @@ export default function SidebarDrawer({
 }) {
   const [currentTime, setCurrentTime] = useState(() => getKolkataTime());
   const [schedulerStatus, setSchedulerStatus] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (visible) {
@@ -105,8 +106,12 @@ export default function SidebarDrawer({
   const userDisplayName = userProfile?.full_name || userProfile?.name || userSession?.userName;
   const userEmail = userProfile?.email || userSession?.email;
 
-  const pinnedChats = recentChats.filter((c) => c.pinned == 1 || c.pinned === true);
-  const unpinnedChats = recentChats.filter((c) => !(c.pinned == 1 || c.pinned === true));
+  const filteredChats = searchQuery.trim()
+    ? recentChats.filter((c) => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase().trim()))
+    : recentChats;
+
+  const pinnedChats = filteredChats.filter((c) => c.pinned == 1 || c.pinned === true);
+  const unpinnedChats = filteredChats.filter((c) => !(c.pinned == 1 || c.pinned === true));
 
   const renderChatItem = (chat) => {
     const isActive = activeThreadId === chat.thread_id;
@@ -151,10 +156,22 @@ export default function SidebarDrawer({
           </View>
 
           {/* Action: New Chat Button */}
-          <TouchableOpacity style={styles.newChatBtn} onPress={handleNewChatPress}>
+          <TouchableOpacity style={styles.newChatBtn} onPress={handleNewChatPress} activeOpacity={0.8}>
             <Text style={styles.newChatIcon}>+</Text>
             <Text style={styles.newChatText}>New Chat</Text>
           </TouchableOpacity>
+
+          {/* Search History Bar */}
+          <View style={styles.searchBarContainer}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search chat history..."
+              placeholderTextColor={colors.textMuted}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
 
           {/* Scrollable Main Drawer Content */}
           <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -329,6 +346,27 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: 14,
     fontWeight: '600',
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    marginBottom: 14,
+  },
+  searchIcon: {
+    fontSize: 12,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: 12,
+    padding: 0,
   },
   scrollArea: {
     flex: 1,

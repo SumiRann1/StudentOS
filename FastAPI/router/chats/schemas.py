@@ -20,10 +20,17 @@ class PinRequest(BaseModel):
 class DeleteRequest(BaseModel):
     thread_id: str
 
+class OCRSection(BaseModel):
+    id: int
+    title: str
+    icon: str
+    content: str
+
 class GraderOutput(BaseModel):
     filename: str
     content_type: str
     answered_text: str
+    sections: Optional[List[OCRSection]] = None
 
 class Base64OCRRequest(BaseModel):
     image_base64: str
