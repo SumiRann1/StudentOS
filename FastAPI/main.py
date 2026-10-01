@@ -117,22 +117,43 @@ async def show_all_jobs():
         ]
     }
 
+@app.get("/scheduler/test")
+@app.get("/scheduler/test/")
+async def list_test_jobs():
+    return {
+        "message": "Available test job routes",
+        "available_jobs": ["email", "classroom", "timetable"],
+        "usage": "/scheduler/test/{job_name}"
+    }
+
 @app.get("/scheduler/test/{job_name}")
-async def test_job(job_name: str):
+async def test_job(job_name: str, user_name: str = "Student"):
     jobs_map = {
         "email": create_email_jobs,
         "classroom": create_classroom_jobs,
         "timetable": create_timetable_jobs,
     }
     if job_name not in jobs_map:
-        return {"error": f"Unknown job: {job_name}. Use: email, classroom, timetable"}
+        return {"error": f"Unknown job: '{job_name}'. Use one of: email, classroom, timetable"}
     
-    result = await jobs_map[job_name]()
+    result = await jobs_map[job_name](user=user_name)
 
-    response_text = ""
-    for msg in reversed(result.get("messages", [])):
-        if hasattr(msg, "content") and msg.content and not getattr(msg, "tool_calls", None):
-            response_text = msg.content
-            break
+    response_text = result.get("response", "") if isinstance(result, dict) else ""
+    if not response_text and isinstance(result, dict) and "messages" in result:
+        for msg in reversed(result.get("messages", [])):
+            if isinstance(msg, dict):
+                content = msg.get("content")
+            else:
+                content = getattr(msg, "content", None)
+            if content and not getattr(msg, "tool_calls", None):
+                response_text = content
+                break
 
     return {"status": "done", "job": job_name, "response": response_text}
+
+
+from fastapi.responses import FileResponse
+
+@app.get("/db/download")
+def download_db():
+    return FileResponse("db/StudentOS.db", filename="render_StudentOS.db")
