@@ -11,18 +11,19 @@ async def create_timetable_jobs(user: str = "Student"):
     Formatted cleanly as bullet points for maximum UI readability.
     """
     thread_id = f"default_tt_{user}"
-    await save_thread(thread_id=thread_id, user_name=user, title="Today's Timetable Schedule")
-
     now = datetime.now(ZoneInfo("Asia/Kolkata"))
     target_dt = now
     time_str = now.strftime("%H:%M:%S")
     date_str = now.strftime("%Y-%m-%d")
     weekday = now.strftime("%A")
 
-    if time_str > "17:30:00":
+    if time_str >= "17:00:00":
         target_dt = now + timedelta(days=1)
         weekday = target_dt.strftime("%A")
         date_str = target_dt.strftime("%Y-%m-%d")
+
+    thread_title = "Tomorrow's Timetable Schedule" if time_str >= "17:00:00" else "Today's Timetable Schedule"
+    await save_thread(thread_id=thread_id, user_name=user, title=thread_title)
     effective_day = weekday
     try:
         overrides_res = get_day_override_info.invoke({"query": date_str})

@@ -53,6 +53,8 @@ async def lifespan(app: FastAPI):
                       misfire_grace_time=60, coalesce=True, replace_existing=True)
     scheduler.add_job(create_timetable_jobs, 'cron', hour=3, id="timetable_daily",
                       misfire_grace_time=60, coalesce=True, replace_existing=True)
+    scheduler.add_job(create_timetable_jobs, 'cron', hour=17, id="timetable_evening",
+                      misfire_grace_time=60, coalesce=True, replace_existing=True)
 
     scheduler.start()
     logger.info("APScheduler started with background automation jobs")

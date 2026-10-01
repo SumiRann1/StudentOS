@@ -335,7 +335,11 @@ async def get_dashboard_briefings(user_name: str = Query("Student")):
         except Exception:
             pass
 
-    if not timetable_text:
+    time_str = now.strftime("%H:%M:%S")
+    target_dt = now + timedelta(days=1) if time_str >= "17:00:00" else now
+    expected_weekday = target_dt.strftime("%A")
+
+    if not timetable_text or expected_weekday.lower() not in timetable_text.lower():
         try:
             await create_timetable_jobs(user=user_name)
             timetable_text = await _get_last_agent_text(timetable_thread_id)
@@ -368,13 +372,14 @@ async def get_dashboard_briefings(user_name: str = Query("Student")):
         rawMarkdown=classroom_text,
         lastSynced="Last Automated Result" if classroom_text else "Not synced yet",
     )
+    timetable_title = "Tomorrows Schedule" if time_str >= "17:00:00" else "Todays Schedule"
     TIMETABLE_BREIF = BreifingClass(
         id="timetable",
         icon="📅",
-        title="Todays Schedule",
+        title=timetable_title,
         badge=timetable_badge,
         badgeColor="#38BDF8",
-        schedule="Daily 3:00 AM",
+        schedule="Daily 3:00 AM & 5:00 PM",
         rawMarkdown=timetable_text,
         lastSynced="Last Automated Result" if timetable_text else "Not synced yet",
     )
