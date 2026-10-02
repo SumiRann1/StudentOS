@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, ActivityIndicator, Platform, StatusBar, Dimensions, ScrollView } from 'react-native';
 import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import { startOAuthLogin } from '../services/authApi';
 
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -22,64 +24,64 @@ export default function LoginScreen() {
 
   return (
     <ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={styles.container}
+      style={[styles.scrollView, { backgroundColor: colors.background }]}
+      contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      <StatusBar barStyle="light-content" backgroundColor="#0A0914" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Cosmic Top Orbital Glow Graphic Elements */}
       <View style={styles.cosmicOrbitalBg}>
-        <View style={styles.planetCircle} />
-        <View style={styles.planetRing} />
-        <View style={styles.planetRingOuter} />
-        <View style={styles.ambientGlow} />
+        <View style={[styles.planetCircle, { backgroundColor: colors.primaryGlow }]} />
+        <View style={[styles.planetRing, { borderColor: colors.cardBorderHover }]} />
+        <View style={[styles.planetRingOuter, { borderColor: colors.cardBorder }]} />
+        <View style={[styles.ambientGlow, { backgroundColor: colors.primaryGlow }]} />
       </View>
 
       {/* Main Header / Branding */}
       <View style={styles.headerContainer}>
-        <View style={styles.badgePill}>
-          <Text style={styles.badgePillText}>✨ AI ACADEMIC WORKSPACE</Text>
+        <View style={[styles.badgePill, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
+          <Text style={[styles.badgePillText, { color: colors.primary }]}>ACADEMIC WORKSPACE</Text>
         </View>
 
-        <View style={styles.logoBadge}>
+        <View style={[styles.logoBadge, { borderColor: colors.cardBorderHover, backgroundColor: colors.cardBackground }]}>
           <Image source={require('../../assets/app-logo.png')} style={styles.logoImg} />
         </View>
 
-        <Text style={styles.heroTitle}>Student OS</Text>
-        <Text style={styles.heroSubtitle}>Your intelligent campus copilot for courses, emails & schedules</Text>
+        <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>Student OS</Text>
+        <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>Your unified workspace for courses, emails & schedules</Text>
       </View>
 
       {/* Features Showcase */}
-      <View style={styles.featuresBox}>
-        <View style={[styles.featureItem, { borderColor: 'rgba(16, 163, 127, 0.3)' }]}>
-          <View style={[styles.iconCircle, { backgroundColor: 'rgba(16, 163, 127, 0.15)' }]}>
-            <Text style={styles.featureIcon}>📚</Text>
+      <View style={[styles.featuresBox, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}>
+        <View style={[styles.featureItem, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+          <View style={[styles.iconCircle, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
+            <Text style={[styles.featureIconText, { color: colors.primary }]}>CLASS</Text>
           </View>
           <View style={styles.featureTextContainer}>
-            <Text style={styles.featureTitle}>Google Classroom</Text>
-            <Text style={styles.featureDesc}>Auto-sync coursework, deadlines & announcements</Text>
+            <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Google Classroom</Text>
+            <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>Auto-sync coursework, deadlines & announcements</Text>
           </View>
         </View>
 
-        <View style={[styles.featureItem, { borderColor: 'rgba(139, 92, 246, 0.3)' }]}>
-          <View style={[styles.iconCircle, { backgroundColor: 'rgba(139, 92, 246, 0.15)' }]}>
-            <Text style={styles.featureIcon}>✉️</Text>
+        <View style={[styles.featureItem, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+          <View style={[styles.iconCircle, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
+            <Text style={[styles.featureIconText, { color: colors.primary }]}>MAIL</Text>
           </View>
           <View style={styles.featureTextContainer}>
-            <Text style={styles.featureTitle}>Gmail Assistant</Text>
-            <Text style={styles.featureDesc}>Smart search, summary & AI email drafting</Text>
+            <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Gmail Assistant</Text>
+            <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>Smart search, summary & AI email drafting</Text>
           </View>
         </View>
 
-        <View style={[styles.featureItem, { borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
-          <View style={[styles.iconCircle, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
-            <Text style={styles.featureIcon}>📅</Text>
+        <View style={[styles.featureItem, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+          <View style={[styles.iconCircle, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
+            <Text style={[styles.featureIconText, { color: colors.primary }]}>TIME</Text>
           </View>
           <View style={styles.featureTextContainer}>
-            <Text style={styles.featureTitle}>Timetable Tracker</Text>
-            <Text style={styles.featureDesc}>Class schedules & exam countdown alerts</Text>
+            <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Timetable Tracker</Text>
+            <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>Class schedules & exam countdown alerts</Text>
           </View>
         </View>
       </View>
@@ -87,13 +89,13 @@ export default function LoginScreen() {
       {/* Authentication Section */}
       <View style={styles.authContainer}>
         <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Sign in with Google Account</Text>
-          <View style={styles.dividerLine} />
+          <View style={[styles.dividerLine, { backgroundColor: colors.cardBorder }]} />
+          <Text style={[styles.dividerText, { color: colors.textSecondary }]}>Sign in with Google Account</Text>
+          <View style={[styles.dividerLine, { backgroundColor: colors.cardBorder }]} />
         </View>
 
         {/* Single Google Sign In Button */}
-        <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleSignIn} disabled={loading} activeOpacity={0.85}>
+        <TouchableOpacity style={[styles.googleBtn, { backgroundColor: colors.primary }]} onPress={handleGoogleSignIn} disabled={loading} activeOpacity={0.85}>
           {loading ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
@@ -108,12 +110,12 @@ export default function LoginScreen() {
 
         {errorMsg && (
           <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {errorMsg}</Text>
+            <Text style={[styles.errorText, { color: colors.error }]}>{errorMsg}</Text>
           </View>
         )}
 
-        <Text style={styles.termsText}>
-          By signing in, you agree to our <Text style={styles.termsLink}>Terms</Text> & <Text style={styles.termsLink}>Privacy Policy</Text>.
+        <Text style={[styles.termsText, { color: colors.textSecondary }]}>
+          By signing in, you agree to our <Text style={[styles.termsLink, { color: colors.primary }]}>Terms</Text> & <Text style={[styles.termsLink, { color: colors.primary }]}>Privacy Policy</Text>.
         </Text>
       </View>
     </ScrollView>
@@ -124,12 +126,10 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     width: '100%',
-    backgroundColor: '#0A0914',
   },
   container: {
     flexGrow: 1,
     width: '100%',
-    backgroundColor: '#0A0914',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 12 : 40) : 54,
@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
     width: width * 0.95,
     height: width * 0.95,
     borderRadius: width * 0.475,
-    backgroundColor: 'rgba(26, 23, 62, 0.4)',
     position: 'absolute',
   },
   planetRing: {
@@ -159,7 +158,6 @@ const styles = StyleSheet.create({
     height: width * 0.55,
     borderRadius: width * 0.65,
     borderWidth: 1.5,
-    borderColor: 'rgba(99, 102, 241, 0.28)',
     transform: [{ rotate: '-28deg' }],
     position: 'absolute',
   },
@@ -168,7 +166,6 @@ const styles = StyleSheet.create({
     height: width * 0.65,
     borderRadius: width * 0.75,
     borderWidth: 1,
-    borderColor: 'rgba(16, 163, 127, 0.18)',
     transform: [{ rotate: '-15deg' }],
     position: 'absolute',
   },
@@ -176,7 +173,6 @@ const styles = StyleSheet.create({
     width: width * 0.85,
     height: width * 0.85,
     borderRadius: width * 0.425,
-    backgroundColor: 'rgba(16, 163, 127, 0.12)',
     position: 'absolute',
     top: 50,
   },
@@ -188,35 +184,25 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   badgePill: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: 'rgba(16, 163, 127, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 163, 127, 0.3)',
     marginBottom: 16,
   },
   badgePillText: {
-    color: '#10A37F',
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '800',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   logoBadge: {
     width: 72,
     height: 72,
     borderRadius: 22,
-    backgroundColor: '#141226',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1.5,
-    borderColor: '#2D2952',
-    shadowColor: '#10A37F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
   },
   logoImg: {
     width: 48,
@@ -224,64 +210,61 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
   },
   heroSubtitle: {
-    fontSize: 13,
-    color: '#94A3B8',
-    marginTop: 6,
+    fontSize: 14,
+    marginTop: 8,
     textAlign: 'center',
     paddingHorizontal: 16,
-    lineHeight: 18,
-    fontWeight: '400',
+    lineHeight: 20,
+    fontWeight: '500',
   },
 
   /* Features List Box */
   featuresBox: {
     width: '100%',
-    backgroundColor: '#121024',
     borderRadius: 22,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#242046',
     gap: 10,
     zIndex: 2,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#171430',
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 16,
     borderWidth: 1,
   },
   iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
+    borderWidth: 1,
   },
-  featureIcon: {
-    fontSize: 18,
+  featureIconText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   featureTextContainer: {
     flex: 1,
   },
   featureTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#F8FAFC',
   },
   featureDesc: {
-    fontSize: 11,
-    color: '#94A3B8',
+    fontSize: 12,
     marginTop: 2,
+    lineHeight: 16,
   },
 
   /* Auth CTA Area */
@@ -299,28 +282,20 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#26224B',
   },
   dividerText: {
-    color: '#64748B',
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 11.5,
+    fontWeight: '700',
     paddingHorizontal: 12,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   googleBtn: {
     width: '100%',
     height: 54,
-    backgroundColor: '#10A37F',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#10A37F',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-    elevation: 8,
   },
   btnContent: {
     flexDirection: 'row',
@@ -349,24 +324,20 @@ const styles = StyleSheet.create({
   errorBox: {
     marginTop: 14,
     padding: 10,
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
     borderRadius: 10,
     width: '100%',
   },
   errorText: {
-    color: colors.error,
     fontSize: 12,
     textAlign: 'center',
   },
   termsText: {
-    fontSize: 11,
-    color: '#64748B',
+    fontSize: 11.5,
     textAlign: 'center',
     marginTop: 16,
     lineHeight: 16,
   },
   termsLink: {
-    color: '#818CF8',
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

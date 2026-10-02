@@ -1,107 +1,235 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
 import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
-export default function Header({ onOpenDrawer, chatTopic = 'Student OS', isOnline = true }) {
+export default function Header({
+  onOpenDrawer,
+  chatTopic = 'Student OS',
+  isOnline = true,
+  onNewChat,
+  onOpenSetup,
+}) {
+  const { colors, themeKey, setThemeKey, themePresets } = useTheme();
+
+  const handleCycleTheme = () => {
+    const keys = Object.keys(themePresets);
+    const currentIndex = keys.indexOf(themeKey);
+    const nextIndex = (currentIndex + 1) % keys.length;
+    setThemeKey(keys[nextIndex]);
+  };
+
+  const currentTheme = themePresets[themeKey] || themePresets.appleSpaceGrey;
+  const themeShortName = currentTheme.name.split(' ')[0] || 'Theme';
+
   return (
-    <View style={styles.header}>
-      <View style={styles.leftSection}>
-        {/* Top-Left Minimal Burger Button */}
+    <View style={[styles.headerContainer, { backgroundColor: colors.headerBg, borderBottomColor: colors.cardBorder }]}>
+      <View style={styles.leftGroup}>
+        {/* Burger Drawer Menu Button */}
         {onOpenDrawer && (
-          <TouchableOpacity style={styles.iconButton} onPress={onOpenDrawer} activeOpacity={0.75}>
-            <Text style={styles.burgerIcon}>☰</Text>
+          <TouchableOpacity
+            style={[styles.drawerButton, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}
+            onPress={onOpenDrawer}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.burgerIcon, { color: colors.textPrimary }]}>☰</Text>
           </TouchableOpacity>
         )}
 
-        {/* Dynamic Chat Topic Badge Container */}
-        <View style={styles.topicBadgeContainer}>
-          <View style={[styles.statusDot, { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting }]} />
-          <Text style={styles.chatTopicText} numberOfLines={1} ellipsizeMode="tail">
+        {/* Brand App Logo Ring */}
+        <View style={styles.brandGroup}>
+          <View style={[styles.logoRing, { borderColor: colors.primaryGlow, backgroundColor: colors.cardBackground }]}>
+            <Image source={require('../../assets/app-logo.png')} style={styles.logoImg} />
+          </View>
+        </View>
+
+        {/* Active Chat Topic Pill */}
+        <View style={[styles.topicContainer, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+          <View
+            style={[
+              styles.statusDot,
+              { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting },
+            ]}
+          />
+          <Text style={[styles.topicText, { color: colors.textPrimary }]} numberOfLines={1} ellipsizeMode="tail">
             {chatTopic}
           </Text>
         </View>
       </View>
 
-      <View style={styles.rightSection}>
-        <View style={styles.v5Badge}>
-          <Text style={styles.v5BadgeText}>v5.0 Pro</Text>
-        </View>
+      <View style={styles.rightGroup}>
+        {/* New Chat Quick Action */}
+        {onNewChat && (
+          <TouchableOpacity
+            style={[styles.newChatHeaderBtn, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}
+            onPress={onNewChat}
+            activeOpacity={0.75}
+          >
+            <Text style={[styles.newChatPlus, { color: colors.primary }]}>+</Text>
+            <Text style={[styles.newChatLabel, { color: colors.textPrimary }]}>New Chat</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Settings / Setup Action */}
+        {onOpenSetup && (
+          <TouchableOpacity
+            style={[styles.setupIconBtn, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}
+            onPress={onOpenSetup}
+            activeOpacity={0.75}
+          >
+            <Text style={[styles.setupIcon, { color: colors.textSecondary }]}>Settings</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Quick Theme Cycle Switcher Badge */}
+        <TouchableOpacity
+          style={[styles.proBadge, { backgroundColor: colors.toolBadgeBg, borderColor: colors.toolBadgeBorder }]}
+          onPress={handleCycleTheme}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.proDot, { backgroundColor: colors.primary }]} />
+          <Text style={[styles.proBadgeText, { color: colors.primary }]}>{themeShortName}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  headerContainer: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: 'rgba(11, 15, 25, 0.85)',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    ...(Platform.OS === 'web'
+      ? {
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }
+      : {}),
+    zIndex: 200,
   },
-  leftSection: {
+  leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 12,
+    flexShrink: 1,
+    gap: 10,
+    marginRight: 10,
   },
-  iconButton: {
+  drawerButton: {
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: colors.cardBackground,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    flexShrink: 0,
   },
   burgerIcon: {
-    color: colors.textPrimary,
     fontSize: 18,
     fontWeight: '600',
   },
-  topicBadgeContainer: {
+  brandGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(17, 24, 39, 0.8)',
+    flexShrink: 0,
+  },
+  logoRing: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  logoImg: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+  },
+  topicContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    maxWidth: '75%',
+    flexShrink: 1,
+    maxWidth: 240,
   },
   statusDot: {
     width: 7,
     height: 7,
     borderRadius: 4,
     marginRight: 8,
+    flexShrink: 0,
   },
-  chatTopicText: {
-    color: colors.textPrimary,
+  topicText: {
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: -0.2,
+    flexShrink: 1,
   },
-  rightSection: {
+  rightGroup: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
+    gap: 8,
   },
-  v5Badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  newChatHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    gap: 5,
+    flexShrink: 0,
   },
-  v5BadgeText: {
-    color: colors.primary,
+  newChatPlus: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  newChatLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  setupIconBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    flexShrink: 0,
+  },
+  setupIcon: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  proBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 5,
+    flexShrink: 0,
+  },
+  proDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  proBadgeText: {
     fontSize: 11,
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
 });

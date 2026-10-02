@@ -20,17 +20,19 @@ export const fetchSchedulerJobs = async () => {
 /**
  * Trigger an automation job on-demand immediately.
  * @param {string} jobName - 'email', 'classroom', or 'timetable'
+ * @param {string} userName - Optional student name
  */
-export const triggerJobOnDemand = async (jobName) => {
+export const triggerJobOnDemand = async (jobName, userName = 'Student') => {
   try {
-    const response = await fetch(`${API_BASE_URL}/scheduler/test/${jobName}`, {
+    const response = await fetch(`${API_BASE_URL}/scheduler/test/${jobName}?user_name=${encodeURIComponent(userName)}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
       throw new Error(`Server returned HTTP ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.warn(`Failed to trigger job '${jobName}':`, error);
     return { status: 'error', error: error.message || 'Network error' };

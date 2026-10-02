@@ -2,37 +2,41 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, ScrollView, Linking } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
-const COLUMN_WIDTHS = [125, 210, 115, 140, 140];
+const COLUMN_WIDTHS = [130, 220, 120, 140, 140];
 
-// Custom Markdown Rules (Wrap Tables in Horizontal ScrollView with Aligned Columns)
+// Custom Markdown Rules (Wrap Tables in Horizontal ScrollView)
 const markdownRules = {
   table: (node, children, parent, styles) => (
     <ScrollView
       key={node.key}
       horizontal
       showsHorizontalScrollIndicator={true}
-      style={{ marginVertical: 8, width: '100%' }}
+      style={{ marginVertical: 10, width: '100%' }}
       contentContainerStyle={{ minWidth: '100%' }}
     >
-      <View style={styles.table}>{children}</View>
+      <View style={styles.table}>
+        {React.Children.toArray(children).filter((child) => React.isValidElement(child))}
+      </View>
     </ScrollView>
   ),
   tr: (node, children, parent, styles) => (
     <View key={node.key} style={styles.tr}>
-      {React.Children.map(children, (child, index) => {
-        if (!React.isValidElement(child)) return child;
-        const cellWidth = COLUMN_WIDTHS[index] || 140;
-        return React.cloneElement(child, {
-          style: [child.props.style, { width: cellWidth, minWidth: cellWidth, maxWidth: cellWidth }],
-        });
-      })}
+      {React.Children.toArray(children)
+        .filter((child) => React.isValidElement(child))
+        .map((child, index) => {
+          const cellWidth = COLUMN_WIDTHS[index] || 140;
+          return React.cloneElement(child, {
+            style: [child.props.style, { width: cellWidth, minWidth: cellWidth, maxWidth: cellWidth }],
+          });
+        })}
     </View>
   ),
 };
 
-// Animated Blinking Cursor Component (ChatGPT Style)
-function BlinkingCursor() {
+// Animated Blinking Cursor Component
+function BlinkingCursor({ primaryColor }) {
   const cursorOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -55,14 +59,14 @@ function BlinkingCursor() {
   }, [cursorOpacity]);
 
   return (
-    <Animated.Text style={[styles.cursorText, { opacity: cursorOpacity }]}>
+    <Animated.Text style={[styles.cursorText, { opacity: cursorOpacity, color: primaryColor }]}>
       {' ▋'}
     </Animated.Text>
   );
 }
 
 // Animated Pulsing Thinking Indicator
-function ThinkingIndicator() {
+function ThinkingIndicator({ primaryColor, textMutedColor }) {
   const pulseOpacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -86,13 +90,14 @@ function ThinkingIndicator() {
 
   return (
     <View style={styles.thinkingRow}>
-      <Animated.View style={[styles.thinkingDot, { opacity: pulseOpacity }]} />
-      <Text style={styles.thinkingText}>Thinking...</Text>
+      <Animated.View style={[styles.thinkingDot, { opacity: pulseOpacity, backgroundColor: primaryColor }]} />
+      <Text style={[styles.thinkingText, { color: textMutedColor }]}>Thinking...</Text>
     </View>
   );
 }
 
 export default function MessageItem({ message }) {
+  const { colors } = useTheme();
   const isUser = message.sender === 'user';
   const isThinking = message.isStreaming && !message.text;
 
@@ -103,23 +108,140 @@ export default function MessageItem({ message }) {
     return true;
   };
 
+  const dynamicMarkdownStyles = {
+    body: {
+      color: colors.agentBubbleText,
+      fontSize: 15,
+      lineHeight: 24,
+    },
+    heading1: {
+      color: colors.textPrimary,
+      fontSize: 20,
+      fontWeight: '700',
+      marginTop: 12,
+      marginBottom: 8,
+    },
+    heading2: {
+      color: colors.textPrimary,
+      fontSize: 17,
+      fontWeight: '700',
+      marginTop: 10,
+      marginBottom: 6,
+    },
+    heading3: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      fontWeight: '600',
+      marginTop: 8,
+      marginBottom: 4,
+    },
+    strong: {
+      fontWeight: '700',
+      color: colors.textPrimary,
+    },
+    em: {
+      fontStyle: 'italic',
+    },
+    link: {
+      color: colors.cyan || colors.primary,
+      fontWeight: '600',
+      textDecorationLine: 'underline',
+    },
+    code_inline: {
+      backgroundColor: colors.cardBackground,
+      color: colors.textPrimary,
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      fontSize: 13,
+    },
+    code_block: {
+      backgroundColor: colors.backgroundSecondary || '#0F172A',
+      borderRadius: 10,
+      padding: 14,
+      marginVertical: 10,
+      borderWidth: 1,
+      borderColor: colors.cardBorder,
+    },
+    fence: {
+      backgroundColor: colors.backgroundSecondary || '#0F172A',
+      color: colors.textPrimary,
+      borderRadius: 10,
+      padding: 14,
+      marginVertical: 10,
+      borderWidth: 1,
+      borderColor: colors.cardBorder,
+      fontSize: 13,
+    },
+    table: {
+      borderWidth: 1,
+      borderColor: colors.cardBorder,
+      borderRadius: 10,
+      marginVertical: 10,
+      backgroundColor: colors.cardBackground,
+    },
+    tr: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+    },
+    th: {
+      backgroundColor: colors.cardBackgroundTranslucent,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      fontSize: 12.5,
+      borderWidth: 0.5,
+      borderColor: colors.cardBorder,
+      justifyContent: 'center',
+    },
+    td: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      color: colors.agentBubbleText,
+      fontSize: 12.5,
+      borderWidth: 0.5,
+      borderColor: colors.cardBorder,
+      justifyContent: 'center',
+    },
+    blockquote: {
+      backgroundColor: colors.primaryGlow,
+      borderLeftWidth: 3,
+      borderLeftColor: colors.primary,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      marginVertical: 10,
+      borderRadius: 6,
+    },
+    bullet_list: {
+      marginVertical: 6,
+    },
+    ordered_list: {
+      marginVertical: 6,
+    },
+    list_item: {
+      marginVertical: 3,
+    },
+  };
+
   return (
     <View style={[styles.wrapper, isUser ? styles.userWrapper : styles.agentWrapper]}>
-      {/* Sender Avatar Badge */}
+      {/* Agent Avatar Badge */}
       {!isUser && (
-        <View style={styles.agentAvatarContainer}>
+        <View style={[styles.agentAvatarContainer, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
           <Text style={styles.avatarIcon}>🤖</Text>
         </View>
       )}
 
-      <View style={[styles.bubble, isUser ? styles.userBubble : styles.agentBubble]}>
+      {/* Bubble Container */}
+      <View style={isUser ? [styles.userBubble, { backgroundColor: colors.userBubble, borderColor: colors.userBubbleBorder }] : [styles.bubble, styles.agentBubble]}>
         {/* Render tool call execution status badges */}
         {message.toolCalls && message.toolCalls.length > 0 && (
           <View style={styles.toolsContainer}>
             {message.toolCalls.map((tool, idx) => (
-              <View key={idx} style={styles.toolBadge}>
+              <View key={idx} style={[styles.toolBadge, { backgroundColor: colors.toolBadgeBg, borderColor: colors.toolBadgeBorder }]}>
                 <Text style={styles.toolDot}>⚡</Text>
-                <Text style={styles.toolText}>{tool.name}</Text>
+                <Text style={[styles.toolText, { color: colors.toolBadgeText }]}>{tool.name}</Text>
               </View>
             ))}
           </View>
@@ -127,24 +249,24 @@ export default function MessageItem({ message }) {
 
         {/* Message Content or Thinking State */}
         {isThinking ? (
-          <ThinkingIndicator />
+          <ThinkingIndicator primaryColor={colors.primary} textMutedColor={colors.textMuted} />
         ) : isUser ? (
-          <Text style={[styles.messageText, styles.userText]}>
+          <Text style={[styles.messageText, { color: colors.userBubbleText }]}>
             {message.text}
           </Text>
         ) : (
           <View style={styles.agentContentContainer}>
-            <Markdown style={markdownStyles} rules={markdownRules} onLinkPress={handleLinkPress}>
+            <Markdown style={dynamicMarkdownStyles} rules={markdownRules} onLinkPress={handleLinkPress}>
               {message.text || ''}
             </Markdown>
-            {message.isStreaming && <BlinkingCursor />}
+            {message.isStreaming && <BlinkingCursor primaryColor={colors.primary} />}
           </View>
         )}
       </View>
 
       {/* User Avatar Badge */}
       {isUser && (
-        <View style={styles.userAvatarContainer}>
+        <View style={[styles.userAvatarContainer, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
           <Text style={styles.avatarIcon}>👤</Text>
         </View>
       )}
@@ -152,181 +274,67 @@ export default function MessageItem({ message }) {
   );
 }
 
-const markdownStyles = {
-  body: {
-    color: colors.agentBubbleText,
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  heading1: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  heading2: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '700',
-    marginTop: 10,
-    marginBottom: 6,
-  },
-  heading3: {
-    color: '#E2E8F0',
-    fontSize: 15,
-    fontWeight: '600',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  strong: {
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  em: {
-    fontStyle: 'italic',
-  },
-  link: {
-    color: '#60A5FA',
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  code_inline: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#F8FAFC',
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    fontSize: 13,
-  },
-  code_block: {
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  fence: {
-    backgroundColor: '#1E293B',
-    color: '#F8FAFC',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-    fontSize: 13,
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 8,
-    marginVertical: 8,
-  },
-  tr: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-  },
-  th: {
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    borderWidth: 0.5,
-    borderColor: '#334155',
-    justifyContent: 'center',
-  },
-  td: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    color: colors.agentBubbleText,
-    borderWidth: 0.5,
-    borderColor: '#334155',
-    justifyContent: 'center',
-  },
-  blockquote: {
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginVertical: 8,
-    borderRadius: 4,
-  },
-  bullet_list: {
-    marginVertical: 4,
-  },
-  ordered_list: {
-    marginVertical: 4,
-  },
-  list_item: {
-    marginVertical: 2,
-  },
-};
-
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
+    maxWidth: 860,
+    alignSelf: 'center',
     flexDirection: 'row',
     marginVertical: 10,
     paddingHorizontal: 16,
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 12,
   },
   userWrapper: {
     justifyContent: 'flex-end',
+    marginLeft: 'auto',
   },
   agentWrapper: {
     justifyContent: 'flex-start',
   },
   agentAvatarContainer: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.4)',
     marginTop: 2,
+    flexShrink: 0,
   },
   userAvatarContainer: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: 12,
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.4)',
     marginTop: 2,
+    flexShrink: 0,
   },
   avatarIcon: {
-    fontSize: 15,
+    fontSize: 16,
   },
   bubble: {
-    maxWidth: '82%',
+    flex: 1,
   },
   userBubble: {
-    backgroundColor: colors.userBubble,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 20,
     borderTopRightRadius: 4,
     borderWidth: 1,
-    borderColor: colors.userBubbleBorder,
     maxWidth: '80%',
+    alignSelf: 'flex-end',
   },
   agentBubble: {
-    backgroundColor: colors.agentBubble,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderTopLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.agentBubbleBorder,
-    maxWidth: '85%',
+    backgroundColor: 'transparent',
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderRadius: 0,
+    borderWidth: 0,
+    borderColor: 'transparent',
+    width: '100%',
     flex: 1,
   },
   agentContentContainer: {
@@ -341,35 +349,26 @@ const styles = StyleSheet.create({
   toolBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.toolBadgeBg,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.toolBadgeBorder,
-    gap: 4,
+    gap: 5,
   },
   toolDot: {
     fontSize: 11,
   },
   toolText: {
-    color: colors.toolBadgeText,
     fontSize: 11,
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
   messageText: {
     fontSize: 15,
-    lineHeight: 24,
+    lineHeight: 22,
     letterSpacing: 0.2,
   },
-  userText: {
-    color: colors.userBubbleText,
-  },
-  agentText: {
-    color: colors.agentBubbleText,
-  },
   cursorText: {
-    color: colors.primary,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -382,11 +381,9 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.primary,
     marginRight: 8,
   },
   thinkingText: {
-    color: colors.textMuted,
     fontSize: 13,
     fontStyle: 'italic',
   },

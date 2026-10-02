@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, FlatList, StatusBar, KeyboardAvoidingView, Platform, Linking, ActivityIndicator } from 'react-native';
 import { colors } from './src/theme/colors';
+import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import Header from './src/components/Header';
 import MessageItem from './src/components/MessageItem';
 import ChatInput from './src/components/ChatInput';
@@ -15,7 +16,8 @@ import { fetchUserProfile } from './src/services/authApi';
 import { triggerJobOnDemand } from './src/services/schedulerApi';
 import { storage } from './src/services/storage';
 
-export default function App() {
+function StudentOSMain() {
+  const { colors } = useTheme();
   const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -301,8 +303,8 @@ export default function App() {
     };
     const promptText = customPrompt || `⚡ Triggering ${titles[jobName] || jobName} automation...`;
 
-    const userMsgId = generateUUID();
-    const agentMsgId = generateUUID();
+    const userMsgId = `usr_${Date.now()}`;
+    const agentMsgId = `agt_${Date.now()}`;
 
     const threadPrefix = jobName === 'timetable' ? 'default_tt' : `default_${jobName}`;
     threadIdRef.current = `${threadPrefix}_${getUserDisplayName()}`;
@@ -369,7 +371,7 @@ export default function App() {
 
   if (isRestoringSession) {
     return (
-      <View style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.safeArea, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -380,7 +382,7 @@ export default function App() {
   }
 
   return (
-    <View style={styles.safeArea}>
+    <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Header with Dynamic Topic */}
@@ -395,7 +397,7 @@ export default function App() {
       {/* Main Content Area */}
       <KeyboardAvoidingView
         style={styles.chatContainer}
-        behavior={Platform.select({ ios: 'padding', android: 'height', default: undefined })}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {messages.length === 0 ? (
@@ -468,11 +470,18 @@ export default function App() {
   );
 }
 
+export default function App() {
+  return (
+    <ThemeProvider>
+      <StudentOSMain />
+    </ThemeProvider>
+  );
+}
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     width: '100%',
-    backgroundColor: colors.background,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 4 : 28) : 0,
   },
   chatContainer: {

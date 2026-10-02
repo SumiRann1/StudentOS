@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Platform, StatusBar } from 'react-native';
 import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import { fetchSetupStatus, saveSetupData, triggerServiceAuth } from '../services/setupApi';
 import { startOAuthLogin } from '../services/authApi';
 
 export default function SetupModal({ visible, onClose }) {
+  const { colors } = useTheme();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedService, setSelectedService] = useState('classroom');
@@ -85,90 +87,88 @@ export default function SetupModal({ visible, onClose }) {
   return (
     <Modal visible={visible} animationType="slide" transparent statusBarTranslucent>
       <View style={styles.overlay}>
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, { backgroundColor: colors.drawerBg, borderColor: colors.cardBorder }]}>
           {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>⚙️ Service Setup & OAuth</Text>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.cardBorder }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Service Integrations & OAuth</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>✕</Text>
+              <Text style={[styles.closeBtnText, { color: colors.textMuted }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView contentContainerStyle={styles.scrollBody}>
-            <Text style={styles.sectionHeader}>Service Credentials Status</Text>
+            <Text style={[styles.sectionHeader, { color: colors.primary }]}>Service Credentials Status</Text>
 
             {loading && !status ? (
               <ActivityIndicator color={colors.primary} style={{ marginVertical: 10 }} />
             ) : (
               <View style={styles.statusCards}>
                 {/* Classroom */}
-                <View style={styles.card}>
-                  <Text style={styles.cardTitle}>📚 Google Classroom</Text>
-                  <Text style={styles.statusLine}>
+                <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.cardBorder }]}>
+                  <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>📚 Google Classroom</Text>
+                  <Text style={[styles.statusLine, { color: colors.textSecondary }]}>
                     Credentials: {status?.classroom?.credentials_exists ? '✅ Configured' : '❌ Missing'}
                   </Text>
-                  <Text style={styles.statusLine}>
+                  <Text style={[styles.statusLine, { color: colors.textSecondary }]}>
                     OAuth Token: {status?.classroom?.token_exists ? '✅ Configured' : '❌ Missing'}
                   </Text>
                 </View>
 
                 {/* Email */}
-                <View style={styles.card}>
-                  <Text style={styles.cardTitle}>✉️ Gmail Service</Text>
-                  <Text style={styles.statusLine}>
+                <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.cardBorder }]}>
+                  <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>✉️ Gmail Service</Text>
+                  <Text style={[styles.statusLine, { color: colors.textSecondary }]}>
                     Credentials: {status?.email?.credentials_exists ? '✅ Configured' : '❌ Missing'}
                   </Text>
-                  <Text style={styles.statusLine}>
+                  <Text style={[styles.statusLine, { color: colors.textSecondary }]}>
                     OAuth Token: {status?.email?.token_exists ? '✅ Configured' : '❌ Missing'}
                   </Text>
                 </View>
               </View>
             )}
 
-            {/* Supabase OAuth Google Sign In / Sign Up Section */}
-            <Text style={styles.sectionHeader}>User Account (Supabase OAuth)</Text>
+            <Text style={[styles.sectionHeader, { color: colors.primary }]}>User Account</Text>
             <TouchableOpacity style={styles.googleAuthBtn} onPress={handleGoogleSignIn}>
-              <Text style={styles.googleAuthBtnText}>🌐 Sign In / Sign Up with Google</Text>
+              <Text style={styles.googleAuthBtnText}>Continue with Google</Text>
             </TouchableOpacity>
 
             {/* Service Selector */}
-            <Text style={styles.sectionHeader}>Configure & Authenticate</Text>
-            <View style={styles.serviceSelector}>
+            <Text style={[styles.sectionHeader, { color: colors.primary }]}>Configure & Authenticate</Text>
+            <View style={[styles.serviceSelector, { backgroundColor: colors.background }]}>
               <TouchableOpacity
-                style={[styles.serviceTab, selectedService === 'classroom' && styles.serviceTabActive]}
+                style={[styles.serviceTab, selectedService === 'classroom' && { backgroundColor: colors.primary }]}
                 onPress={() => setSelectedService('classroom')}
               >
-                <Text style={[styles.serviceTabText, selectedService === 'classroom' && styles.serviceTabTextActive]}>
+                <Text style={[styles.serviceTabText, { color: selectedService === 'classroom' ? '#FFFFFF' : colors.textMuted }]}>
                   Classroom
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.serviceTab, selectedService === 'email' && styles.serviceTabActive]}
+                style={[styles.serviceTab, selectedService === 'email' && { backgroundColor: colors.primary }]}
                 onPress={() => setSelectedService('email')}
               >
-                <Text style={[styles.serviceTabText, selectedService === 'email' && styles.serviceTabTextActive]}>
+                <Text style={[styles.serviceTabText, { color: selectedService === 'email' ? '#FFFFFF' : colors.textMuted }]}>
                   Email
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Interactive OAuth trigger button */}
-            <TouchableOpacity style={styles.authBtn} onPress={handleAuthenticate} disabled={loading}>
+            <TouchableOpacity style={[styles.authBtn, { backgroundColor: colors.primary }]} onPress={handleAuthenticate} disabled={loading}>
               <Text style={styles.authBtnText}>
-                🔑 Verify / Authenticate {selectedService === 'classroom' ? 'Classroom' : 'Email'}
+                Authenticate {selectedService === 'classroom' ? 'Classroom' : 'Email'}
               </Text>
             </TouchableOpacity>
 
-            <Text style={styles.helpText}>
+            <Text style={[styles.helpText, { color: colors.textMuted }]}>
               Alternatively, run in terminal:{' '}
-              <Text style={styles.codeText}>python scripts/authenticate_oauth.py --service {selectedService}</Text>
+              <Text style={[styles.codeText, { color: colors.secondary }]}>python scripts/authenticate_oauth.py --service {selectedService}</Text>
             </Text>
 
             {/* Input fields */}
-            <Text style={styles.inputLabel}>Credentials JSON:</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Credentials JSON:</Text>
             <TextInput
-              style={styles.jsonInput}
+              style={[styles.jsonInput, { backgroundColor: colors.background, color: colors.textPrimary, borderColor: colors.cardBorder }]}
               placeholder='Paste content of oauth credentials.json...'
               placeholderTextColor={colors.textMuted}
               multiline
@@ -176,9 +176,9 @@ export default function SetupModal({ visible, onClose }) {
               onChangeText={setCredentialsJson}
             />
 
-            <Text style={styles.inputLabel}>Token JSON (Optional):</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Token JSON (Optional):</Text>
             <TextInput
-              style={styles.jsonInput}
+              style={[styles.jsonInput, { backgroundColor: colors.background, color: colors.textPrimary, borderColor: colors.cardBorder }]}
               placeholder='Paste content of oauth token.json...'
               placeholderTextColor={colors.textMuted}
               multiline
@@ -188,11 +188,11 @@ export default function SetupModal({ visible, onClose }) {
 
             {feedback && (
               <View style={[styles.feedbackBox, feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess]}>
-                <Text style={styles.feedbackText}>{feedback.message}</Text>
+                <Text style={[styles.feedbackText, { color: colors.textPrimary }]}>{feedback.message}</Text>
               </View>
             )}
 
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={loading}>
+            <TouchableOpacity style={[styles.saveBtn, { backgroundColor: colors.primary }]} onPress={handleSave} disabled={loading}>
               <Text style={styles.saveBtnText}>{loading ? 'Saving...' : 'Save Configuration'}</Text>
             </TouchableOpacity>
           </ScrollView>
@@ -212,11 +212,11 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
-    backgroundColor: colors.cardBackground,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '85%',
     padding: 16,
+    borderWidth: 1,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -224,10 +224,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
   },
   modalTitle: {
-    color: colors.textPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -235,14 +233,12 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   closeBtnText: {
-    color: colors.textMuted,
     fontSize: 18,
   },
   scrollBody: {
     paddingVertical: 12,
   },
   sectionHeader: {
-    color: colors.primary,
     fontSize: 13,
     fontWeight: '700',
     marginTop: 10,
@@ -255,26 +251,21 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: colors.background,
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
   },
   cardTitle: {
-    color: colors.textPrimary,
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 4,
   },
   statusLine: {
-    color: colors.textSecondary,
     fontSize: 10,
     marginTop: 2,
   },
   serviceSelector: {
     flexDirection: 'row',
-    backgroundColor: colors.background,
     borderRadius: 8,
     padding: 3,
     marginBottom: 12,
@@ -285,32 +276,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 6,
   },
-  serviceTabActive: {
-    backgroundColor: colors.primary,
-  },
   serviceTabText: {
-    color: colors.textMuted,
     fontSize: 12,
     fontWeight: '600',
   },
-  serviceTabTextActive: {
-    color: '#FFFFFF',
-  },
   inputLabel: {
-    color: colors.textSecondary,
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 4,
   },
   jsonInput: {
-    backgroundColor: colors.background,
-    color: colors.textPrimary,
     borderRadius: 8,
     padding: 10,
     height: 70,
     fontSize: 11,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
     marginBottom: 10,
   },
   feedbackBox: {
@@ -325,11 +305,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
   },
   feedbackText: {
-    color: colors.textPrimary,
     fontSize: 11,
   },
   saveBtn: {
-    backgroundColor: colors.secondary,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
@@ -341,7 +319,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   authBtn: {
-    backgroundColor: colors.primary,
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
@@ -365,13 +342,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   helpText: {
-    color: colors.textMuted,
     fontSize: 10,
     marginBottom: 12,
   },
   codeText: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: colors.secondary,
   },
 });
-

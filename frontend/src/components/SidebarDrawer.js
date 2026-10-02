@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, StatusBar, Image, ScrollView, ActivityIndicator, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
+  Platform,
+  StatusBar,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+  TextInput,
+} from 'react-native';
 import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import { pinThread, unpinThread, deleteThread } from '../services/chatStream';
 import { fetchSchedulerJobs } from '../services/schedulerApi';
 
@@ -19,9 +32,9 @@ const getKolkataTime = () => {
 };
 
 const AUTOMATION_LIST = [
-  { id: 'email', icon: '✉️', title: 'Email Digest', time: '1:00 AM IST', threadId: 'default_email_Student' },
-  { id: 'classroom', icon: '📚', title: 'Classroom Pending', time: '2:00 AM IST', threadId: 'default_classroom_Student' },
-  { id: 'timetable', icon: '📅', title: "Today's Schedule", time: '3:00 AM IST', threadId: 'default_tt_Student' },
+  { id: 'email', icon: '✉️', title: 'Email Digest', time: '1:00 AM IST' },
+  { id: 'classroom', icon: '📚', title: 'Classroom Pending', time: '2:00 AM IST' },
+  { id: 'timetable', icon: '📅', title: "Today's Schedule", time: '3:00 AM IST' },
 ];
 
 export default function SidebarDrawer({
@@ -40,8 +53,10 @@ export default function SidebarDrawer({
   onTriggerAutomation,
   runningJob,
 }) {
+  const { colors, themeKey, setThemeKey, themePresets } = useTheme();
+
   const [currentTime, setCurrentTime] = useState(() => getKolkataTime());
-  const [schedulerStatus, setSchedulerStatus] = useState(null);
+  const [schedulerJobs, setSchedulerJobs] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -59,9 +74,13 @@ export default function SidebarDrawer({
   }, [visible]);
 
   const loadSchedulerStatus = async () => {
-    const data = await fetchSchedulerJobs();
-    if (data) {
-      setSchedulerStatus(data);
+    try {
+      const data = await fetchSchedulerJobs();
+      if (data) {
+        setSchedulerJobs(data);
+      }
+    } catch (e) {
+      console.warn('Failed to load scheduler jobs:', e);
     }
   };
 
@@ -116,14 +135,32 @@ export default function SidebarDrawer({
   const renderChatItem = (chat) => {
     const isActive = activeThreadId === chat.thread_id;
     const isPinned = chat.pinned == 1 || chat.pinned === true;
+
     return (
-      <View key={chat.thread_id || chat.timestamp} style={[styles.recentChatItem, isActive && styles.recentChatItemActive]}>
+      <View
+        key={chat.thread_id || chat.timestamp}
+        style={[
+          styles.recentChatItem,
+          isActive && {
+            backgroundColor: colors.primaryGlow,
+            borderWidth: 1,
+            borderColor: colors.primary,
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.chatTitleTouch} onPress={() => handleSelectChatPress(chat)}>
           <Text style={styles.recentChatIcon}>{isPinned ? '📌' : '💬'}</Text>
-          <Text style={[styles.recentChatTitle, isActive && styles.recentChatTitleActive]} numberOfLines={1}>
+          <Text
+            style={[
+              styles.recentChatTitle,
+              { color: isActive ? colors.textPrimary : colors.textSecondary },
+            ]}
+            numberOfLines={1}
+          >
             {chat.title || 'Untitled Chat'}
           </Text>
         </TouchableOpacity>
+
         <View style={styles.actionButtonsRow}>
           <TouchableOpacity style={styles.pinActionBtn} onPress={() => handleTogglePin(chat)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Text style={styles.actionBtnText}>{isPinned ? '📍' : '📌'}</Text>
@@ -136,36 +173,41 @@ export default function SidebarDrawer({
     );
   };
 
-  return (
-    <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
-      <View style={styles.overlay}>
-        {/* Backdrop overlay touch to dismiss */}
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+  if (!visible) return null;
 
-        {/* Sidebar Content Panel */}
-        <View style={styles.drawerPanel}>
-          {/* Top Header */}
+  return (
+    <Modal visible={visible} animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        {/* Sidebar Panel (Left Aligned) */}
+        <View style={[styles.drawerPanel, { backgroundColor: colors.drawerBg, borderRightColor: colors.cardBorder }]}>
+          {/* Header */}
           <View style={styles.drawerHeader}>
             <View style={styles.logoRow}>
-              <Image source={require('../../assets/app-logo.png')} style={styles.drawerLogoImg} />
-              <Text style={styles.logoTitle}>Student OS</Text>
+              <View style={[styles.logoRing, { borderColor: colors.primaryGlow, backgroundColor: colors.cardBackground }]}>
+                <Image source={require('../../assets/app-logo.png')} style={styles.drawerLogoImg} />
+              </View>
+              <Text style={[styles.logoTitle, { color: colors.textPrimary }]}>Student OS</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Text style={styles.closeBtnText}>✕</Text>
+              <Text style={[styles.closeBtnText, { color: colors.textMuted }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Action: New Chat Button */}
-          <TouchableOpacity style={styles.newChatBtn} onPress={handleNewChatPress} activeOpacity={0.8}>
-            <Text style={styles.newChatIcon}>+</Text>
-            <Text style={styles.newChatText}>New Chat</Text>
+          {/* New Chat Button */}
+          <TouchableOpacity
+            style={[styles.newChatBtn, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}
+            onPress={handleNewChatPress}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.newChatIcon, { color: colors.primary }]}>+</Text>
+            <Text style={[styles.newChatText, { color: colors.textPrimary }]}>New Chat</Text>
           </TouchableOpacity>
 
-          {/* Search History Bar */}
-          <View style={styles.searchBarContainer}>
+          {/* Search Bar */}
+          <View style={[styles.searchBarContainer, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
               placeholder="Search chat history..."
               placeholderTextColor={colors.textMuted}
               value={searchQuery}
@@ -173,18 +215,51 @@ export default function SidebarDrawer({
             />
           </View>
 
-          {/* Scrollable Main Drawer Content */}
+          {/* Scroll Area */}
           <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             
-            {/* ⚡ Daily Automations Control Section */}
+            {/* 🎨 Interactive Design System Theme Picker */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>⚡ Daily Automations</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Theme & Appearance</Text>
+              <View style={styles.themeGrid}>
+                {Object.keys(themePresets).map((key) => {
+                  const preset = themePresets[key];
+                  const isSelected = themeKey === key;
+                  return (
+                    <TouchableOpacity
+                      key={key}
+                      style={[
+                        styles.themeCardItem,
+                        { borderColor: isSelected ? colors.primary : colors.cardBorder },
+                        isSelected && { backgroundColor: colors.primaryGlow },
+                      ]}
+                      onPress={() => setThemeKey(key)}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.themeSwatchRow}>
+                        <View style={[styles.swatchDot, { backgroundColor: preset.background }]} />
+                        <View style={[styles.swatchDot, { backgroundColor: preset.primary }]} />
+                        <View style={[styles.swatchDot, { backgroundColor: preset.secondary }]} />
+                        {isSelected && <Text style={[styles.selectedCheck, { color: colors.primary }]}>✓</Text>}
+                      </View>
+                      <Text style={[styles.themeCardName, { color: isSelected ? colors.textPrimary : colors.textSecondary }]}>
+                        {preset.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* ⚡ Daily Automations Section */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Daily Automations</Text>
               {AUTOMATION_LIST.map((auto) => {
                 const isRunning = runningJob === auto.id;
                 return (
                   <TouchableOpacity
                     key={auto.id}
-                    style={styles.autoRow}
+                    style={[styles.autoRow, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}
                     disabled={!!runningJob}
                     onPress={() => {
                       onClose();
@@ -195,14 +270,14 @@ export default function SidebarDrawer({
                   >
                     <Text style={styles.autoIcon}>{auto.icon}</Text>
                     <View style={styles.autoInfo}>
-                      <Text style={styles.autoTitle}>{auto.title}</Text>
-                      <Text style={styles.autoTime}>{auto.time}</Text>
+                      <Text style={[styles.autoTitle, { color: colors.textPrimary }]}>{auto.title}</Text>
+                      <Text style={[styles.autoTime, { color: colors.primary }]}>{auto.time}</Text>
                     </View>
                     {isRunning ? (
                       <ActivityIndicator size="small" color={colors.primary} />
                     ) : (
-                      <View style={styles.autoTriggerBadge}>
-                        <Text style={styles.autoTriggerText}>Run</Text>
+                      <View style={[styles.autoTriggerBadge, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
+                        <Text style={[styles.autoTriggerText, { color: colors.primary }]}>Run</Text>
                       </View>
                     )}
                   </TouchableOpacity>
@@ -213,7 +288,7 @@ export default function SidebarDrawer({
             {/* Pinned Chats Section */}
             {pinnedChats.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>📌 Pinned Chats</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Pinned Chats</Text>
                 {pinnedChats.map(renderChatItem)}
               </View>
             )}
@@ -221,29 +296,33 @@ export default function SidebarDrawer({
             {/* Recent Chats Section */}
             {unpinnedChats.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>💬 Recent Chats</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Recent Chats</Text>
                 {unpinnedChats.map(renderChatItem)}
               </View>
             )}
 
-            {/* Status & Time Section */}
+            {/* System Status & Time Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>System & Time</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>System Status</Text>
               <View style={styles.statusRow}>
                 <View style={[styles.statusDot, { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting }]} />
-                <Text style={styles.statusText}>{isOnline ? 'Backend Server Connected' : 'Connecting to Server...'}</Text>
+                <Text style={[styles.statusText, { color: colors.textSecondary }]}>{isOnline ? 'Backend Connected' : 'Connecting...'}</Text>
               </View>
-              <View style={styles.timeRow}>
-                <Text style={styles.timeIcon}>🕒</Text>
-                <Text style={styles.timeText}>{currentTime}</Text>
+              {schedulerJobs && schedulerJobs.job_count !== undefined && (
+                <Text style={[styles.schedulerCountText, { color: colors.textMuted }]}>
+                  {schedulerJobs.job_count} Background Cron Jobs Active
+                </Text>
+              )}
+              <View style={[styles.timeRow, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+                <Text style={[styles.timeText, { color: colors.primary }]}>{currentTime}</Text>
               </View>
             </View>
 
-            {/* Navigation Items */}
+            {/* Navigation Menu */}
             <View style={styles.menuSection}>
               <TouchableOpacity style={styles.menuItem} onPress={handleSetupPress}>
                 <Text style={styles.menuItemIcon}>⚙️</Text>
-                <Text style={styles.menuItemText}>Service Credentials & OAuth</Text>
+                <Text style={[styles.menuItemText, { color: colors.textPrimary }]}>Service Integrations & OAuth</Text>
               </TouchableOpacity>
 
               {onLogout && (
@@ -255,23 +334,26 @@ export default function SidebarDrawer({
             </View>
           </ScrollView>
 
-          {/* Footer Info */}
+          {/* User Profile Footer */}
           <View style={styles.footer}>
             {(userDisplayName || userEmail) && (
-              <View style={styles.userProfileBox}>
-                <Text style={styles.userNameText} numberOfLines={1}>
-                  👤 {userDisplayName || 'Signed In'}
+              <View style={[styles.userProfileBox, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+                <Text style={[styles.userNameText, { color: colors.textPrimary }]} numberOfLines={1}>
+                  👤 {userDisplayName || 'Student'}
                 </Text>
                 {userEmail && (
-                  <Text style={styles.userEmailText} numberOfLines={1}>
+                  <Text style={[styles.userEmailText, { color: colors.textMuted }]} numberOfLines={1}>
                     {userEmail}
                   </Text>
                 )}
               </View>
             )}
-            <Text style={styles.footerText}>Student OS v5 • AI Assistant</Text>
+            <Text style={[styles.footerText, { color: colors.textMuted }]}>Student OS Workspace</Text>
           </View>
         </View>
+
+        {/* Backdrop overlay (Right Side) */}
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
       </View>
     </Modal>
   );
@@ -281,40 +363,52 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
   },
   backdrop: {
     flex: 1,
   },
   drawerPanel: {
-    width: 280,
-    maxWidth: '80%',
+    width: 300,
+    maxWidth: '85%',
     height: '100%',
-    backgroundColor: colors.cardBackground,
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 12 : 36) : 20,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 12 : 36) : 24,
     paddingBottom: 20,
     borderRightWidth: 1,
-    borderRightColor: colors.cardBorder,
+    ...(Platform.OS === 'web'
+      ? {
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          boxShadow: '20px 0 50px rgba(0, 0, 0, 0.7)',
+        }
+      : {}),
   },
   drawerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  drawerLogoImg: {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
+  logoRing: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
     marginRight: 10,
   },
+  drawerLogoImg: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+  },
   logoTitle: {
-    color: colors.textPrimary,
     fontSize: 17,
     fontWeight: '700',
   },
@@ -322,40 +416,33 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   closeBtnText: {
-    color: colors.textMuted,
     fontSize: 18,
   },
   newChatBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 11,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   newChatIcon: {
-    color: colors.textPrimary,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     marginRight: 10,
   },
   newChatText: {
-    color: colors.textPrimary,
     fontSize: 14,
     fontWeight: '600',
   },
   searchBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
     marginBottom: 14,
   },
   searchIcon: {
@@ -364,7 +451,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: colors.textPrimary,
     fontSize: 12,
     padding: 0,
   },
@@ -374,6 +460,38 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 12,
   },
+  themeGrid: {
+    gap: 8,
+    marginTop: 4,
+  },
+  themeCardItem: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  themeSwatchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  swatchDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  selectedCheck: {
+    fontSize: 12,
+    fontWeight: '800',
+    marginLeft: 'auto',
+  },
+  themeCardName: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
   recentChatItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -382,12 +500,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     marginBottom: 4,
-    backgroundColor: 'transparent',
-  },
-  recentChatItemActive: {
-    backgroundColor: 'rgba(16, 163, 127, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 163, 127, 0.3)',
   },
   chatTitleTouch: {
     flexDirection: 'row',
@@ -400,14 +512,9 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   recentChatTitle: {
-    color: colors.textSecondary,
     fontSize: 13,
     fontWeight: '500',
     flex: 1,
-  },
-  recentChatTitleActive: {
-    color: colors.textPrimary,
-    fontWeight: '600',
   },
   actionButtonsRow: {
     flexDirection: 'row',
@@ -416,11 +523,9 @@ const styles = StyleSheet.create({
   },
   pinActionBtn: {
     padding: 4,
-    borderRadius: 4,
   },
   deleteActionBtn: {
     padding: 4,
-    borderRadius: 4,
   },
   actionBtnText: {
     fontSize: 12,
@@ -429,12 +534,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   sectionTitle: {
-    color: colors.textMuted,
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'uppercase',
     marginBottom: 8,
     letterSpacing: 0.5,
@@ -442,13 +546,11 @@ const styles = StyleSheet.create({
   autoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
   },
   autoIcon: {
     fontSize: 15,
@@ -458,25 +560,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   autoTitle: {
-    color: colors.textPrimary,
     fontSize: 12,
     fontWeight: '600',
   },
   autoTime: {
-    color: colors.primary,
     fontSize: 10,
     fontWeight: '500',
   },
   autoTriggerBadge: {
-    backgroundColor: 'rgba(16, 163, 127, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(16, 163, 127, 0.3)',
   },
   autoTriggerText: {
-    color: colors.primary,
     fontSize: 11,
     fontWeight: '600',
   },
@@ -491,27 +588,23 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statusText: {
-    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '500',
+  },
+  schedulerCountText: {
+    fontSize: 11,
+    marginTop: 4,
   },
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
-    backgroundColor: colors.background,
     paddingVertical: 7,
     paddingHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-  },
-  timeIcon: {
-    fontSize: 13,
-    marginRight: 8,
   },
   timeText: {
-    color: colors.primary,
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: 0.2,
@@ -532,35 +625,29 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   menuItemText: {
-    color: colors.textPrimary,
     fontSize: 13,
     fontWeight: '500',
   },
   footer: {
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: colors.cardBorder,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   userProfileBox: {
     marginBottom: 6,
     padding: 8,
-    backgroundColor: colors.background,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
   },
   userNameText: {
-    color: colors.textPrimary,
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 2,
   },
   userEmailText: {
-    color: colors.textMuted,
     fontSize: 10,
   },
   footerText: {
-    color: colors.textMuted,
     fontSize: 10,
     textAlign: 'center',
   },
