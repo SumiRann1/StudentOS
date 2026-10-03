@@ -1,7 +1,5 @@
-from agents.email.node import preprocessor, chat_node
-from state import AgentState
+from agents.email.node import chat_node
 from config import email_tools
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, END, START
 from langgraph.prebuilt import ToolNode, tools_condition
 

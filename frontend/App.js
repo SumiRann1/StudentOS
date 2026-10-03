@@ -30,11 +30,55 @@ function StudentOSMain() {
   const [isRestoringSession, setIsRestoringSession] = useState(true);
   const [recentChats, setRecentChats] = useState([]);
   const [activeTitle, setActiveTitle] = useState('Student OS');
-  
+
   const flatListRef = useRef(null);
   const threadIdRef = useRef(null);
 
   useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const styleId = 'student-os-global-glass-styles';
+      if (!document.getElementById(styleId)) {
+        const styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        styleEl.innerHTML = `
+          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+          * {
+            box-sizing: border-box !important;
+          }
+
+          body, html, #root {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            background-color: #07080A !important;
+            background-image: 
+              radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.16), transparent 55%),
+              radial-gradient(circle at 85% 65%, rgba(139, 92, 246, 0.09), transparent 45%),
+              radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.07), transparent 45%) !important;
+            background-attachment: fixed !important;
+            color: #F8FAFC !important;
+            overflow-x: hidden;
+          }
+
+          /* Custom Glassmorphism Scrollbar */
+          ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+          }
+          ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+          }
+          ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.5);
+          }
+        `;
+        document.head.appendChild(styleEl);
+      }
+    }
+
     checkServerHealth();
     restoreUserSession();
 
@@ -390,6 +434,7 @@ function StudentOSMain() {
         chatTopic={chatTopic}
         isOnline={isOnline}
         onOpenSetup={() => setIsSetupVisible(true)}
+        onOpenOcr={() => setIsOcrModalVisible(true)}
         onNewChat={handleNewChat}
         onOpenDrawer={handleOpenDrawer}
       />

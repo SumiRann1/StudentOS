@@ -1,5 +1,3 @@
-import os
-import sys
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from backend.agents.timetable.tool import get_day_schedule, get_day_override_info, get_all_holidays
@@ -7,8 +5,7 @@ from db.database import save_messages, save_thread
 
 async def create_timetable_jobs(user: str = "Student"):
     """
-    Direct zero-LLM connector job for daily timetable schedule.
-    Formatted cleanly as bullet points for maximum UI readability.
+    Timetable GRaph ka tool use karke CRON JOB
     """
     thread_id = f"default_tt_{user}"
     now = datetime.now(ZoneInfo("Asia/Kolkata"))

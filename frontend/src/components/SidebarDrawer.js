@@ -33,7 +33,7 @@ const getKolkataTime = () => {
 
 const AUTOMATION_LIST = [
   { id: 'email', icon: '✉️', title: 'Email Digest', time: '1:00 AM IST' },
-  { id: 'classroom', icon: '📚', title: 'Classroom Pending', time: '2:00 AM IST' },
+  { id: 'classroom', icon: '📚', title: 'Classroom Sync', time: '2:00 AM IST' },
   { id: 'timetable', icon: '📅', title: "Today's Schedule", time: '3:00 AM IST' },
 ];
 
@@ -58,6 +58,7 @@ export default function SidebarDrawer({
   const [currentTime, setCurrentTime] = useState(() => getKolkataTime());
   const [schedulerJobs, setSchedulerJobs] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showThemePicker, setShowThemePicker] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -125,12 +126,38 @@ export default function SidebarDrawer({
   const userDisplayName = userProfile?.full_name || userProfile?.name || userSession?.userName;
   const userEmail = userProfile?.email || userSession?.email;
 
+  // Search Filter
   const filteredChats = searchQuery.trim()
     ? recentChats.filter((c) => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase().trim()))
     : recentChats;
 
+  // Pinned vs Unpinned Categorization by Date
   const pinnedChats = filteredChats.filter((c) => c.pinned == 1 || c.pinned === true);
   const unpinnedChats = filteredChats.filter((c) => !(c.pinned == 1 || c.pinned === true));
+
+  // Date Grouping Helper
+  const now = new Date();
+  const todayChats = [];
+  const pastWeekChats = [];
+  const olderChats = [];
+
+  unpinnedChats.forEach((chat) => {
+    const timestamp = chat.timestamp || chat.updated_at || chat.created_at;
+    if (!timestamp) {
+      todayChats.push(chat);
+      return;
+    }
+    const date = new Date(timestamp);
+    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 1) {
+      todayChats.push(chat);
+    } else if (diffDays <= 7) {
+      pastWeekChats.push(chat);
+    } else {
+      olderChats.push(chat);
+    }
+  });
 
   const renderChatItem = (chat) => {
     const isActive = activeThreadId === chat.thread_id;
@@ -148,7 +175,7 @@ export default function SidebarDrawer({
           },
         ]}
       >
-        <TouchableOpacity style={styles.chatTitleTouch} onPress={() => handleSelectChatPress(chat)}>
+        <TouchableOpacity style={styles.chatTitleTouch} onPress={() => handleSelectChatPress(chat)} activeOpacity={0.75}>
           <Text style={styles.recentChatIcon}>{isPinned ? '📌' : '💬'}</Text>
           <Text
             style={[
@@ -180,30 +207,38 @@ export default function SidebarDrawer({
       <View style={styles.overlay}>
         {/* Sidebar Panel (Left Aligned) */}
         <View style={[styles.drawerPanel, { backgroundColor: colors.drawerBg, borderRightColor: colors.cardBorder }]}>
-          {/* Header */}
+          
+          {/* 1. Header Dock */}
           <View style={styles.drawerHeader}>
             <View style={styles.logoRow}>
               <View style={[styles.logoRing, { borderColor: colors.primaryGlow, backgroundColor: colors.cardBackground }]}>
                 <Image source={require('../../assets/app-logo.png')} style={styles.drawerLogoImg} />
               </View>
-              <Text style={[styles.logoTitle, { color: colors.textPrimary }]}>Student OS</Text>
+              <View>
+                <View style={styles.brandTitleRow}>
+                  <Text style={[styles.logoTitle, { color: colors.textPrimary }]}>Student OS</Text>
+                  <View style={[styles.versionPill, { backgroundColor: colors.primaryGlow }]}>
+                    <Text style={[styles.versionText, { color: colors.primary }]}>v1.0</Text>
+                  </View>
+                </View>
+                <Text style={[styles.brandSubtext, { color: colors.textMuted }]}>Academic Workspace</Text>
+              </View>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.75}>
               <Text style={[styles.closeBtnText, { color: colors.textMuted }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          {/* New Chat Button */}
+          {/* 2. Primary Actions: + New Chat & Search Input */}
           <TouchableOpacity
-            style={[styles.newChatBtn, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}
+            style={[styles.newChatBtn, { backgroundColor: colors.primary }]}
             onPress={handleNewChatPress}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <Text style={[styles.newChatIcon, { color: colors.primary }]}>+</Text>
-            <Text style={[styles.newChatText, { color: colors.textPrimary }]}>New Chat</Text>
+            <Text style={styles.newChatIcon}>+</Text>
+            <Text style={styles.newChatText}>New Chat Thread</Text>
           </TouchableOpacity>
 
-          {/* Search Bar */}
           <View style={[styles.searchBarContainer, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
@@ -213,47 +248,58 @@ export default function SidebarDrawer({
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearSearchBtn}>
+                <Text style={[styles.clearSearchText, { color: colors.textMuted }]}>✕</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
-          {/* Scroll Area */}
+          {/* 3. Main Scrollable Navigation Area */}
           <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             
-            {/* 🎨 Interactive Design System Theme Picker */}
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Theme & Appearance</Text>
-              <View style={styles.themeGrid}>
-                {Object.keys(themePresets).map((key) => {
-                  const preset = themePresets[key];
-                  const isSelected = themeKey === key;
-                  return (
-                    <TouchableOpacity
-                      key={key}
-                      style={[
-                        styles.themeCardItem,
-                        { borderColor: isSelected ? colors.primary : colors.cardBorder },
-                        isSelected && { backgroundColor: colors.primaryGlow },
-                      ]}
-                      onPress={() => setThemeKey(key)}
-                      activeOpacity={0.8}
-                    >
-                      <View style={styles.themeSwatchRow}>
-                        <View style={[styles.swatchDot, { backgroundColor: preset.background }]} />
-                        <View style={[styles.swatchDot, { backgroundColor: preset.primary }]} />
-                        <View style={[styles.swatchDot, { backgroundColor: preset.secondary }]} />
-                        {isSelected && <Text style={[styles.selectedCheck, { color: colors.primary }]}>✓</Text>}
-                      </View>
-                      <Text style={[styles.themeCardName, { color: isSelected ? colors.textPrimary : colors.textSecondary }]}>
-                        {preset.name}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+            {/* Pinned Chats Section */}
+            {pinnedChats.length > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.primary }]}>📌 PINNED CHATS</Text>
+                {pinnedChats.map(renderChatItem)}
               </View>
-            </View>
+            )}
 
-            {/* ⚡ Daily Automations Section */}
+            {/* Today Chats */}
+            {todayChats.length > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>📅 TODAY</Text>
+                {todayChats.map(renderChatItem)}
+              </View>
+            )}
+
+            {/* Past 7 Days */}
+            {pastWeekChats.length > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>🕒 PREVIOUS 7 DAYS</Text>
+                {pastWeekChats.map(renderChatItem)}
+              </View>
+            )}
+
+            {/* Older Chats */}
+            {olderChats.length > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>🗄️ OLDER CHATS</Text>
+                {olderChats.map(renderChatItem)}
+              </View>
+            )}
+
+            {/* Fallback Empty State */}
+            {filteredChats.length === 0 && (
+              <View style={styles.emptyStateContainer}>
+                <Text style={[styles.emptyStateText, { color: colors.textMuted }]}>No chat threads found</Text>
+              </View>
+            )}
+
+            {/* ⚡ Daily Automations Micro Section */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Daily Automations</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>⚡ DAILY AUTOMATIONS</Text>
               {AUTOMATION_LIST.map((auto) => {
                 const isRunning = runningJob === auto.id;
                 return (
@@ -267,11 +313,12 @@ export default function SidebarDrawer({
                         onTriggerAutomation(auto.id);
                       }
                     }}
+                    activeOpacity={0.8}
                   >
                     <Text style={styles.autoIcon}>{auto.icon}</Text>
                     <View style={styles.autoInfo}>
                       <Text style={[styles.autoTitle, { color: colors.textPrimary }]}>{auto.title}</Text>
-                      <Text style={[styles.autoTime, { color: colors.primary }]}>{auto.time}</Text>
+                      <Text style={[styles.autoTime, { color: colors.textMuted }]}>{auto.time}</Text>
                     </View>
                     {isRunning ? (
                       <ActivityIndicator size="small" color={colors.primary} />
@@ -285,61 +332,77 @@ export default function SidebarDrawer({
               })}
             </View>
 
-            {/* Pinned Chats Section */}
-            {pinnedChats.length > 0 && (
-              <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Pinned Chats</Text>
-                {pinnedChats.map(renderChatItem)}
-              </View>
-            )}
-
-            {/* Recent Chats Section */}
-            {unpinnedChats.length > 0 && (
-              <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Recent Chats</Text>
-                {unpinnedChats.map(renderChatItem)}
-              </View>
-            )}
-
-            {/* System Status & Time Section */}
+            {/* 🎨 Theme Picker Accordion Toggle */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>System Status</Text>
-              <View style={styles.statusRow}>
-                <View style={[styles.statusDot, { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting }]} />
-                <Text style={[styles.statusText, { color: colors.textSecondary }]}>{isOnline ? 'Backend Connected' : 'Connecting...'}</Text>
-              </View>
-              {schedulerJobs && schedulerJobs.job_count !== undefined && (
-                <Text style={[styles.schedulerCountText, { color: colors.textMuted }]}>
-                  {schedulerJobs.job_count} Background Cron Jobs Active
+              <TouchableOpacity
+                style={styles.sectionHeaderAccordion}
+                onPress={() => setShowThemePicker((prev) => !prev)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.sectionTitle, { color: colors.textMuted, marginBottom: 0 }]}>
+                  🎨 THEME: {themePresets[themeKey]?.name || 'Default'}
                 </Text>
-              )}
-              <View style={[styles.timeRow, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
-                <Text style={[styles.timeText, { color: colors.primary }]}>{currentTime}</Text>
-              </View>
-            </View>
-
-            {/* Navigation Menu */}
-            <View style={styles.menuSection}>
-              <TouchableOpacity style={styles.menuItem} onPress={handleSetupPress}>
-                <Text style={styles.menuItemIcon}>⚙️</Text>
-                <Text style={[styles.menuItemText, { color: colors.textPrimary }]}>Service Integrations & OAuth</Text>
+                <Text style={[styles.accordionIcon, { color: colors.textMuted }]}>
+                  {showThemePicker ? '▲' : '▼'}
+                </Text>
               </TouchableOpacity>
 
-              {onLogout && (
-                <TouchableOpacity style={styles.menuItem} onPress={handleLogoutPress}>
-                  <Text style={styles.menuItemIcon}>🚪</Text>
-                  <Text style={[styles.menuItemText, { color: colors.error }]}>Sign Out</Text>
-                </TouchableOpacity>
+              {showThemePicker && (
+                <View style={styles.themeGrid}>
+                  {Object.keys(themePresets).map((key) => {
+                    const preset = themePresets[key];
+                    const isSelected = themeKey === key;
+                    return (
+                      <TouchableOpacity
+                        key={key}
+                        style={[
+                          styles.themeCardItem,
+                          { borderColor: isSelected ? colors.primary : colors.cardBorder },
+                          isSelected && { backgroundColor: colors.primaryGlow },
+                        ]}
+                        onPress={() => setThemeKey(key)}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.themeSwatchRow}>
+                          <View style={[styles.swatchDot, { backgroundColor: preset.background }]} />
+                          <View style={[styles.swatchDot, { backgroundColor: preset.primary }]} />
+                          <View style={[styles.swatchDot, { backgroundColor: preset.secondary }]} />
+                          {isSelected && <Text style={[styles.selectedCheck, { color: colors.primary }]}>✓</Text>}
+                        </View>
+                        <Text style={[styles.themeCardName, { color: isSelected ? colors.textPrimary : colors.textSecondary }]}>
+                          {preset.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               )}
             </View>
+
+            {/* Service Integrations Option */}
+            <TouchableOpacity style={[styles.menuItem, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]} onPress={handleSetupPress} activeOpacity={0.8}>
+              <Text style={styles.menuItemIcon}>⚙️</Text>
+              <Text style={[styles.menuItemText, { color: colors.textPrimary }]}>Integrations & Service Health</Text>
+            </TouchableOpacity>
+
           </ScrollView>
 
-          {/* User Profile Footer */}
-          <View style={styles.footer}>
-            {(userDisplayName || userEmail) && (
-              <View style={[styles.userProfileBox, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+          {/* 4. Sticky User Profile & System Status Footer */}
+          <View style={[styles.footer, { borderTopColor: colors.cardBorder }]}>
+            <View style={styles.footerStatusRow}>
+              <View style={[styles.statusDot, { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting }]} />
+              <Text style={[styles.statusText, { color: colors.textSecondary }]}>
+                {isOnline ? 'Online' : 'Connecting...'} • {currentTime}
+              </Text>
+            </View>
+
+            <View style={[styles.userProfileBox, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+              <View style={[styles.userAvatarCircle, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
+                <Text style={styles.userAvatarIcon}>👤</Text>
+              </View>
+              <View style={styles.userInfoCol}>
                 <Text style={[styles.userNameText, { color: colors.textPrimary }]} numberOfLines={1}>
-                  👤 {userDisplayName || 'Student'}
+                  {userDisplayName || 'Student'}
                 </Text>
                 {userEmail && (
                   <Text style={[styles.userEmailText, { color: colors.textMuted }]} numberOfLines={1}>
@@ -347,8 +410,12 @@ export default function SidebarDrawer({
                   </Text>
                 )}
               </View>
-            )}
-            <Text style={[styles.footerText, { color: colors.textMuted }]}>Student OS Workspace</Text>
+              {onLogout && (
+                <TouchableOpacity style={styles.logoutBtn} onPress={handleLogoutPress} activeOpacity={0.75} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={styles.logoutIcon}>🚪</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
 
@@ -363,18 +430,18 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.72)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
   backdrop: {
     flex: 1,
   },
   drawerPanel: {
-    width: 300,
+    width: 310,
     maxWidth: '85%',
     height: '100%',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 12 : 36) : 24,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ? StatusBar.currentHeight + 12 : 36) : 22,
+    paddingBottom: 16,
     borderRightWidth: 1,
     ...(Platform.OS === 'web'
       ? {
@@ -388,60 +455,83 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 16,
   },
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   logoRing: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     marginRight: 10,
   },
   drawerLogoImg: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+  },
+  brandTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   logoTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 16.5,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  versionPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  versionText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+  },
+  brandSubtext: {
+    fontSize: 10.5,
+    fontWeight: '500',
+    marginTop: 1,
   },
   closeBtn: {
     padding: 6,
   },
   closeBtnText: {
     fontSize: 18,
+    fontWeight: '700',
   },
   newChatBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 11,
+    justifyContent: 'center',
+    height: 44,
     borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   newChatIcon: {
+    color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '700',
-    marginRight: 10,
+    fontWeight: '800',
+    marginRight: 8,
   },
   newChatText: {
+    color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   searchBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 7,
+    height: 38,
     borderWidth: 1,
     marginBottom: 14,
   },
@@ -451,46 +541,30 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 12.5,
     padding: 0,
+  },
+  clearSearchBtn: {
+    padding: 4,
+  },
+  clearSearchText: {
+    fontSize: 12,
   },
   scrollArea: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 12,
+    paddingBottom: 16,
   },
-  themeGrid: {
-    gap: 8,
-    marginTop: 4,
+  section: {
+    marginBottom: 14,
   },
-  themeCardItem: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  themeSwatchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  swatchDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  selectedCheck: {
-    fontSize: 12,
+  sectionTitle: {
+    fontSize: 10.5,
     fontWeight: '800',
-    marginLeft: 'auto',
-  },
-  themeCardName: {
-    fontSize: 12,
-    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    letterSpacing: 0.8,
   },
   recentChatItem: {
     flexDirection: 'row',
@@ -498,7 +572,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 8,
     paddingHorizontal: 10,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 4,
   },
   chatTitleTouch: {
@@ -508,12 +582,12 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   recentChatIcon: {
-    fontSize: 14,
-    marginRight: 10,
+    fontSize: 13,
+    marginRight: 8,
   },
   recentChatTitle: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 12.5,
+    fontWeight: '600',
     flex: 1,
   },
   actionButtonsRow: {
@@ -522,26 +596,21 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   pinActionBtn: {
-    padding: 4,
+    padding: 3,
   },
   deleteActionBtn: {
-    padding: 4,
+    padding: 3,
   },
   actionBtnText: {
-    fontSize: 12,
-  },
-  section: {
-    marginBottom: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  sectionTitle: {
     fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    letterSpacing: 0.5,
+  },
+  emptyStateContainer: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 12,
+    fontStyle: 'italic',
   },
   autoRow: {
     flexDirection: 'row',
@@ -553,7 +622,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   autoIcon: {
-    fontSize: 15,
+    fontSize: 14,
     marginRight: 10,
   },
   autoInfo: {
@@ -566,6 +635,7 @@ const styles = StyleSheet.create({
   autoTime: {
     fontSize: 10,
     fontWeight: '500',
+    marginTop: 1,
   },
   autoTriggerBadge: {
     paddingHorizontal: 8,
@@ -574,81 +644,122 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   autoTriggerText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 10.5,
+    fontWeight: '700',
   },
-  statusRow: {
+  sectionHeaderAccordion: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 6,
+    marginBottom: 6,
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
+  accordionIcon: {
+    fontSize: 10,
   },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  schedulerCountText: {
-    fontSize: 11,
+  themeGrid: {
+    gap: 6,
     marginTop: 4,
   },
-  timeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    paddingVertical: 7,
+  themeCardItem: {
     paddingHorizontal: 10,
+    paddingVertical: 7,
     borderRadius: 8,
     borderWidth: 1,
   },
-  timeText: {
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+  themeSwatchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 3,
   },
-  menuSection: {
-    flex: 1,
+  swatchDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  selectedCheck: {
+    fontSize: 11,
+    fontWeight: '800',
+    marginLeft: 'auto',
+  },
+  themeCardName: {
+    fontSize: 11.5,
+    fontWeight: '600',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    marginBottom: 2,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 10,
   },
   menuItemIcon: {
-    fontSize: 15,
-    marginRight: 12,
+    fontSize: 14,
+    marginRight: 10,
   },
   menuItemText: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
   },
   footer: {
-    paddingTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  footerStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 2,
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '500',
   },
   userProfileBox: {
-    marginBottom: 6,
-    padding: 8,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 12,
     borderWidth: 1,
+  },
+  userAvatarCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    marginRight: 10,
+  },
+  userAvatarIcon: {
+    fontSize: 14,
+  },
+  userInfoCol: {
+    flex: 1,
   },
   userNameText: {
     fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 2,
+    fontWeight: '700',
   },
   userEmailText: {
     fontSize: 10,
+    marginTop: 1,
   },
-  footerText: {
-    fontSize: 10,
-    textAlign: 'center',
+  logoutBtn: {
+    padding: 6,
+  },
+  logoutIcon: {
+    fontSize: 14,
   },
 });

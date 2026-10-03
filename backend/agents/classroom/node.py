@@ -35,4 +35,3 @@ def chat_node(state: AgentState):
 
     response = classroom_llm_with_tools.invoke(messages)
     return {"classroom_result": [response], "messages": [response]}
-

@@ -189,12 +189,12 @@ def oauth_callback(
         # If custom redirect_to URL is specified (e.g. mobile app scheme)
         if redirect_to:
             sep = "&" if "?" in redirect_to else "?"
-            redirect_url = (
+        redirect_url = (
                 f"{redirect_to}{sep}"
-                f"access_token={res.session.access_token}"
-                f"&refresh_token={res.session.refresh_token}"
-            )
-            return RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+            f"access_token={res.session.access_token}"
+            f"&refresh_token={res.session.refresh_token}"
+        )
+        return RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
         # Default for web fetch calls (returns JSON AuthResponse)
         return AuthResponse(

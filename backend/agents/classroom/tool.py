@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -29,9 +29,6 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-
-import json
 
 SCOPES = [
     "https://www.googleapis.com/auth/classroom.courses.readonly",
@@ -267,7 +264,11 @@ def get_upcoming_assignments(course_id_or_name: str = "", max_results: int = 10)
                             courseId=cid, courseWorkId=cw["id"], userId="me"
                         ).execute()
                         subs = subs_res.get("studentSubmissions", [])
-                        sub_state = subs[0].get("state") if subs else "NEW"
+                        sub = subs[0] if subs else {}
+                        sub_state = sub.get("state", "NEW")
+                        assigned_grade = sub.get("assignedGrade")
+                        draft_grade = sub.get("draftGrade")
+                        is_late = sub.get("late", False)
 
                         upcoming.append({
                             "id": cw["id"],
@@ -277,6 +278,10 @@ def get_upcoming_assignments(course_id_or_name: str = "", max_results: int = 10)
                             "due": fmt_due(due, cw.get("dueTime", {})),
                             "dueInt": due_int,
                             "submissionState": sub_state,
+                            "assignedGrade": assigned_grade,
+                            "draftGrade": draft_grade,
+                            "late": is_late,
+                            "maxPoints": cw.get("maxPoints"),
                             "alternateLink": cw.get("alternateLink", "")
                         })
             except Exception:

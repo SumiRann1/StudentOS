@@ -1,9 +1,8 @@
 import os
 import sys
 import json
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from typing import Dict, Any
 import logging
 import uuid
 
@@ -25,7 +24,7 @@ chat_router = APIRouter(prefix="/chat", tags=["Chat"])
 agent = build_orchastetor_graph(AgentState)
 
 async def generate_agent_stream(query: str, thread_id: str, state: dict, config: dict):
-    """Async generator for streaming agent output token-by-token as Server-Sent Events (SSE)."""
+    """Agent response token-by-token stream karne ke liye (Server-Sent Events SSE)."""
     try:
         full_response = ""
 

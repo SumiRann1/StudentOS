@@ -27,3 +27,6 @@ Thumbs.db
 *.db
 
 *.md
+!README.md
+!backend.md
+!frontend.md

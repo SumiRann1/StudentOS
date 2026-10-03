@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
-import { colors } from '../theme/colors';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, useWindowDimensions } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 
 export default function Header({
@@ -9,8 +8,13 @@ export default function Header({
   isOnline = true,
   onNewChat,
   onOpenSetup,
+  onOpenOcr,
 }) {
   const { colors, themeKey, setThemeKey, themePresets } = useTheme();
+  const { width } = useWindowDimensions();
+
+  const isMobile = width < 640;
+  const isSmallMobile = width < 440;
 
   const handleCycleTheme = () => {
     const keys = Object.keys(themePresets);
@@ -24,71 +28,102 @@ export default function Header({
 
   return (
     <View style={[styles.headerContainer, { backgroundColor: colors.headerBg, borderBottomColor: colors.cardBorder }]}>
+      {/* Left Group: Drawer + Brand Logo + Topic Status */}
       <View style={styles.leftGroup}>
         {/* Burger Drawer Menu Button */}
         {onOpenDrawer && (
           <TouchableOpacity
-            style={[styles.drawerButton, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}
+            style={[styles.btnBase, styles.iconOnlySquare, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}
             onPress={onOpenDrawer}
             activeOpacity={0.7}
           >
-            <Text style={[styles.burgerIcon, { color: colors.textPrimary }]}>☰</Text>
+            <Text style={[styles.btnIcon, { color: colors.textPrimary }]}>☰</Text>
           </TouchableOpacity>
         )}
 
         {/* Brand App Logo Ring */}
-        <View style={styles.brandGroup}>
-          <View style={[styles.logoRing, { borderColor: colors.primaryGlow, backgroundColor: colors.cardBackground }]}>
-            <Image source={require('../../assets/app-logo.png')} style={styles.logoImg} />
-          </View>
+        <View style={[styles.btnBase, styles.iconOnlySquare, { borderColor: colors.primaryGlow, backgroundColor: colors.cardBackground }]}>
+          <Image source={require('../../assets/app-logo.png')} style={styles.logoImg} />
         </View>
 
-        {/* Active Chat Topic Pill */}
-        <View style={[styles.topicContainer, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
-          <View
-            style={[
-              styles.statusDot,
-              { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting },
-            ]}
-          />
-          <Text style={[styles.topicText, { color: colors.textPrimary }]} numberOfLines={1} ellipsizeMode="tail">
-            {chatTopic}
-          </Text>
-        </View>
+        {/* Active Chat Topic & Connection Status Pill */}
+        {!isSmallMobile && (
+          <View style={[styles.topicContainer, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}>
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: isOnline ? colors.statusOnline : colors.statusConnecting },
+              ]}
+            />
+            <Text style={[styles.topicText, { color: colors.textPrimary }]} numberOfLines={1} ellipsizeMode="tail">
+              {chatTopic}
+            </Text>
+          </View>
+        )}
       </View>
 
+      {/* Right Group: Action Hub */}
       <View style={styles.rightGroup}>
         {/* New Chat Quick Action */}
         {onNewChat && (
           <TouchableOpacity
-            style={[styles.newChatHeaderBtn, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}
+            style={[
+              styles.btnBase,
+              { backgroundColor: colors.primaryGlow, borderColor: colors.primary },
+              isMobile ? styles.iconOnlySquare : styles.btnWithText,
+            ]}
             onPress={onNewChat}
             activeOpacity={0.75}
           >
-            <Text style={[styles.newChatPlus, { color: colors.primary }]}>+</Text>
-            <Text style={[styles.newChatLabel, { color: colors.textPrimary }]}>New Chat</Text>
+            <Text style={[styles.btnIcon, { color: colors.primary }]}>＋</Text>
+            {!isMobile && <Text style={[styles.btnLabel, { color: colors.textPrimary }]}>New Chat</Text>}
+          </TouchableOpacity>
+        )}
+
+        {/* Quick OCR Scanner Action */}
+        {onOpenOcr && (
+          <TouchableOpacity
+            style={[
+              styles.btnBase,
+              { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground },
+              isMobile ? styles.iconOnlySquare : styles.btnWithText,
+            ]}
+            onPress={onOpenOcr}
+            activeOpacity={0.75}
+          >
+            <Text style={[styles.btnIcon, { color: colors.textSecondary }]}>📷</Text>
+            {!isMobile && <Text style={[styles.btnLabel, { color: colors.textSecondary }]}>OCR</Text>}
           </TouchableOpacity>
         )}
 
         {/* Settings / Setup Action */}
         {onOpenSetup && (
           <TouchableOpacity
-            style={[styles.setupIconBtn, { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground }]}
+            style={[
+              styles.btnBase,
+              { borderColor: colors.cardBorder, backgroundColor: colors.cardBackground },
+              isMobile ? styles.iconOnlySquare : styles.btnWithText,
+            ]}
             onPress={onOpenSetup}
             activeOpacity={0.75}
           >
-            <Text style={[styles.setupIcon, { color: colors.textSecondary }]}>Settings</Text>
+            <Text style={[styles.btnIcon, { color: colors.textSecondary }]}>⚙️</Text>
+            {!isMobile && <Text style={[styles.btnLabel, { color: colors.textSecondary }]}>Setup</Text>}
           </TouchableOpacity>
         )}
 
         {/* Quick Theme Cycle Switcher Badge */}
         <TouchableOpacity
-          style={[styles.proBadge, { backgroundColor: colors.toolBadgeBg, borderColor: colors.toolBadgeBorder }]}
+          style={[
+            styles.btnBase,
+            { backgroundColor: colors.toolBadgeBg, borderColor: colors.toolBadgeBorder },
+            isMobile ? styles.iconOnlySquare : styles.btnWithText,
+          ]}
           onPress={handleCycleTheme}
           activeOpacity={0.7}
         >
-          <View style={[styles.proDot, { backgroundColor: colors.primary }]} />
-          <Text style={[styles.proBadgeText, { color: colors.primary }]}>{themeShortName}</Text>
+          <View style={[styles.themeColorDot, { backgroundColor: colors.primary }]} />
+          {!isMobile && <Text style={[styles.btnLabel, { color: colors.primary }]}>{themeShortName}</Text>}
         </TouchableOpacity>
       </View>
     </View>
@@ -98,16 +133,16 @@ export default function Header({
 const styles = StyleSheet.create({
   headerContainer: {
     width: '100%',
+    height: 54,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     ...(Platform.OS === 'web'
       ? {
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
         }
       : {}),
     zIndex: 200,
@@ -117,62 +152,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     flexShrink: 1,
-    gap: 10,
-    marginRight: 10,
-  },
-  drawerButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    flexShrink: 0,
-  },
-  burgerIcon: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  brandGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  logoRing: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  logoImg: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-  },
-  topicContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    flexShrink: 1,
-    maxWidth: 240,
-  },
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+    gap: 8,
     marginRight: 8,
-    flexShrink: 0,
-  },
-  topicText: {
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: -0.2,
-    flexShrink: 1,
   },
   rightGroup: {
     flexDirection: 'row',
@@ -180,56 +161,75 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     gap: 8,
   },
-  newChatHeaderBtn: {
+
+  /* Base Button Styling (Exact 36px Height Uniformity) */
+  btnBase: {
+    height: 36,
+    minHeight: 36,
+    maxHeight: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  iconOnlySquare: {
+    width: 36,
+    minWidth: 36,
+    maxWidth: 36,
+    paddingHorizontal: 0,
+  },
+  btnWithText: {
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  btnIcon: {
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  btnLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+
+  /* App Logo inside 36x36px Square */
+  logoImg: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+  },
+
+  /* Active Topic Status Pill (36px Height) */
+  topicContainer: {
+    height: 36,
+    minHeight: 36,
+    borderRadius: 18,
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 5,
-    flexShrink: 0,
+    flexShrink: 1,
+    maxWidth: 220,
   },
-  newChatPlus: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  newChatLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  setupIconBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    flexShrink: 0,
-  },
-  setupIcon: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  proBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 5,
-    flexShrink: 0,
-  },
-  proDot: {
+  statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
+    marginRight: 8,
+    flexShrink: 0,
   },
-  proBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+  topicText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+    flexShrink: 1,
+  },
+  themeColorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

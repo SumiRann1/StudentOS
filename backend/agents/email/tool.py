@@ -2,7 +2,7 @@ import os
 import base64
 import email.utils
 from email.message import EmailMessage
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
@@ -23,9 +23,6 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-
-import json
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
 

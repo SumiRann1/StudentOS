@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, ScrollView, StyleSheet, Platform } from 'react-native';
-import { colors } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 
 const PROMPT_SUGGESTIONS = [
@@ -8,7 +7,7 @@ const PROMPT_SUGGESTIONS = [
   { icon: '📚', text: 'List my Google Classroom assignments' },
   { icon: '✉️', text: 'Check unread student emails' },
   { icon: '📝', text: 'Help me plan my study schedule' },
-  { icon: '📊', text: 'Analyze grade requirements for my target GPA' },
+  { icon: '📊', text: 'Analyze transcript for GPA requirements' },
 ];
 
 export default function ChatInput({
@@ -63,14 +62,15 @@ export default function ChatInput({
           styles.pillDock,
           {
             backgroundColor: colors.cardBackgroundTranslucent,
-            borderColor: isFocused ? colors.primary : colors.cardBorder,
+            borderColor: isFocused ? colors.primary : colors.cardBorderHover,
+            ...(Platform.OS === 'web' && isFocused ? { boxShadow: `0 0 16px ${colors.primaryGlow}` } : {}),
           },
         ]}
       >
         {/* Quick OCR Attachment Action */}
         {onOpenOcr && (
           <TouchableOpacity
-            style={[styles.attachBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+            style={[styles.attachBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorderHover }]}
             onPress={onOpenOcr}
             disabled={disabled}
             activeOpacity={0.75}
@@ -102,7 +102,7 @@ export default function ChatInput({
             styles.sendBtn,
             canSend
               ? { backgroundColor: colors.primary }
-              : { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+              : { backgroundColor: 'rgba(255, 255, 255, 0.08)' },
           ]}
           onPress={onSend}
           disabled={!canSend}
@@ -138,11 +138,12 @@ const styles = StyleSheet.create({
   chipPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
     marginRight: 6,
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(12px)' } : {}),
   },
   chipIcon: {
     fontSize: 13,
@@ -150,23 +151,22 @@ const styles = StyleSheet.create({
   },
   chipLabel: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   pillDock: {
-    width: '92%',
-    maxWidth: 820,
+    width: '94%',
+    maxWidth: 840,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 26,
+    borderRadius: 24,
     borderWidth: 1.5,
     paddingHorizontal: 14,
     paddingVertical: 6,
     minHeight: 54,
     ...(Platform.OS === 'web'
       ? {
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
         }
       : {}),
   },
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 10,
     borderWidth: 1,
   },
   attachIcon: {
@@ -200,13 +200,14 @@ const styles = StyleSheet.create({
   },
   sendIconText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     marginTop: -2,
   },
   disclaimerLabel: {
     fontSize: 11,
     marginTop: 6,
     textAlign: 'center',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
 });
+

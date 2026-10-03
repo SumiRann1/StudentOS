@@ -38,4 +38,3 @@ def chat_node(state : AgentState) -> AgentState:
 
     response = timetable_llm.invoke(messages)
     return {"timetable_result": [response], "messages": [response]}
-

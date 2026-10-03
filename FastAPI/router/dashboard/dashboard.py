@@ -1,8 +1,6 @@
-import os
-import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from fastapi import APIRouter, Query
 from backend.agents.timetable.tool import get_day_schedule, get_day_override_info, get_all_holidays
 from backend.agents.classroom.tool import get_upcoming_assignments
@@ -16,12 +14,12 @@ dashboard_router = APIRouter(tags=["Dashboard"])
 
 
 def _get_kolkata_now():
-    """Helper to get current datetime in Asia/Kolkata timezone."""
+    """Kolkata timezone me current datetime nikalne ka simple helper."""
     return datetime.now(ZoneInfo("Asia/Kolkata"))
 
 
 def _calculate_greeting(now_dt: datetime) -> str:
-    """Calculates time-of-day greeting."""
+    """Time of day ke hisab se greeting text calculate karta hai."""
     hour = now_dt.hour
     if 5 <= hour < 12:
         return "Good morning"
@@ -33,7 +31,7 @@ def _calculate_greeting(now_dt: datetime) -> str:
 
 
 def _parse_time_to_minutes(time_str: str) -> Optional[int]:
-    """Converts time string (e.g. '09:00', '9:30 AM', '14:00', '2:00 PM') to minutes from midnight."""
+    """Time string (e.g. '09:00', '9:30 AM', '14:00') ko midnight se elapsed minutes me convert karta hai."""
     if not time_str:
         return None
     s = time_str.strip()
@@ -47,7 +45,7 @@ def _parse_time_to_minutes(time_str: str) -> Optional[int]:
 
 
 def _parse_slot_times(time_range_str: str):
-    """Parses '09:00 - 10:00' or '9:00 AM - 10:00 AM' into (start_mins, end_mins)."""
+    """Slot time range string ('09:00 - 10:00') ko start aur end minutes me parse karta hai."""
     if not time_range_str or "-" not in time_range_str:
         return None, None
     parts = time_range_str.split("-")
@@ -58,8 +56,7 @@ def _parse_slot_times(time_range_str: str):
 
 def get_next_class_logic(user_now: Optional[datetime] = None) -> Dict[str, Any]:
     """
-    Computes current ongoing class, next upcoming class, total active class hours,
-    and day status for current server time in IST (Asia/Kolkata).
+    Current ongoing class, next upcoming class countdown aur total active class hours calculate karta hai (IST me).
     """
     now = user_now or _get_kolkata_now()
     weekday = now.strftime("%A")
@@ -173,7 +170,7 @@ def get_next_class_logic(user_now: Optional[datetime] = None) -> Dict[str, Any]:
 
 
 def parse_badge_text_from_markdown(text: str, widget_type: str, active_hours: float = 0.0) -> str:
-    """Server-side heuristic badge calculation from markdown or fallback counts."""
+    """Markdown content ya counts me se badge text nikalne ka logic."""
     if not text or not isinstance(text, str):
         if widget_type == "timetable" and active_hours > 0:
             return f"{active_hours} Hours"
@@ -224,10 +221,55 @@ def parse_badge_text_from_markdown(text: str, widget_type: str, active_hours: fl
     return "Synced"
 
 
+def compute_submission_status(
+    submission_state: str,
+    assigned_grade: Optional[Any] = None,
+    max_points: Optional[Any] = None,
+    is_late: bool = False
+) -> Dict[str, str]:
+    """Submission status ka human-readable label aur badge emoji compute karta hai."""
+    state = (submission_state or "NEW").upper()
+
+    def _fmt(val):
+        if val is None:
+            return None
+        try:
+            f = float(val)
+            return f"{f:g}"
+        except (ValueError, TypeError):
+            return str(val)
+
+    g_str = _fmt(assigned_grade)
+    m_str = _fmt(max_points)
+
+    if state == "RETURNED" or assigned_grade is not None:
+        if g_str is not None and m_str is not None:
+            lbl = f"Graded: {g_str}/{m_str}"
+        elif g_str is not None:
+            lbl = f"Graded: {g_str}"
+        else:
+            lbl = "Graded"
+        return {"statusLabel": lbl, "statusType": "graded", "statusBadge": "🟣 Graded"}
+
+    if state == "TURNED_IN":
+        if is_late:
+            return {"statusLabel": "Submitted Late", "statusType": "late", "statusBadge": "🟡 Submitted Late"}
+        return {"statusLabel": "Turned In", "statusType": "turned_in", "statusBadge": "🟢 Turned In"}
+
+    if state == "RECLAIMED_BY_STUDENT":
+        return {"statusLabel": "Unsubmitted (Draft)", "statusType": "reclaimed", "statusBadge": "🟠 Draft"}
+
+    if is_late or state in ["NEW", "CREATED"]:
+        if is_late:
+            return {"statusLabel": "Overdue / Missing", "statusType": "overdue", "statusBadge": "🔴 Overdue"}
+        return {"statusLabel": "Assigned (Pending)", "statusType": "pending", "statusBadge": "🔵 Assigned"}
+
+    return {"statusLabel": "Assigned (Pending)", "statusType": "pending", "statusBadge": "🔵 Assigned"}
+
+
 def get_upcoming_deadlines_logic(max_results: int = 10) -> Dict[str, Any]:
     """
-    Fetches upcoming Google Classroom assignment deadlines ordered by due date,
-    categorizing urgency into 'today', 'tomorrow', or 'upcoming'.
+    Upcoming Google Classroom assignment deadlines fetch karke urgency (today/tomorrow/upcoming) wise order karta hai.
     """
     try:
         res = get_upcoming_assignments.invoke({"max_results": max_results})
@@ -247,6 +289,18 @@ def get_upcoming_deadlines_logic(max_results: int = 10) -> Dict[str, Any]:
                 urgency = "upcoming"
                 icon = "🟢"
 
+            sub_state = a.get("submissionState", "NEW")
+            assigned_grade = a.get("assignedGrade")
+            max_points = a.get("maxPoints")
+            is_late = a.get("late", False)
+
+            status_meta = compute_submission_status(
+                submission_state=sub_state,
+                assigned_grade=assigned_grade,
+                max_points=max_points,
+                is_late=is_late
+            )
+
             processed.append({
                 "id": a.get("id"),
                 "courseId": a.get("courseId"),
@@ -255,7 +309,13 @@ def get_upcoming_deadlines_logic(max_results: int = 10) -> Dict[str, Any]:
                 "due": due_str,
                 "urgency": urgency,
                 "icon": icon,
-                "submissionState": a.get("submissionState", "NEW"),
+                "submissionState": sub_state,
+                "assignedGrade": assigned_grade,
+                "maxPoints": max_points,
+                "late": is_late,
+                "statusLabel": status_meta["statusLabel"],
+                "statusType": status_meta["statusType"],
+                "statusBadge": status_meta["statusBadge"],
                 "alternateLink": a.get("alternateLink", "")
             })
 

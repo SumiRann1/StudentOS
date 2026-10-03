@@ -1,13 +1,8 @@
-import os
-import sys
 from backend.agents.email.tool import get_emails_in_date_range
 from db.database import save_messages, save_thread
 
 async def create_email_jobs(user: str = "Student"):
-    """
-    Direct zero-LLM connector job for unread priority emails from the last 24 hours.
-    Fetches raw Gmail API unread messages using get_emails_in_date_range and formats clean Markdown digest output instantly without consuming LLM tokens.
-    """
+    """Email Graph se tool use karke CRON Job run karna"""
     thread_id = f"default_email_{user}"
     await save_thread(thread_id=thread_id, user_name=user, title="Email Digest Summary")
 

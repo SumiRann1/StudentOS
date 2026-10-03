@@ -11,7 +11,6 @@ if backend_dir not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from FastAPI.router.chats.chat import chat_router
 from FastAPI.router.chats.grader_api import grader_router
 from FastAPI.router.setup.setup import setup_router
@@ -25,7 +24,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from db.database import init_db
 import logging
-import asyncio
 from contextlib import asynccontextmanager
 
 logging.basicConfig(level=logging.INFO)

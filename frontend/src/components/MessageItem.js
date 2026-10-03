@@ -233,15 +233,15 @@ export default function MessageItem({ message }) {
         </View>
       )}
 
-      {/* Bubble Container */}
-      <View style={isUser ? [styles.userBubble, { backgroundColor: colors.userBubble, borderColor: colors.userBubbleBorder }] : [styles.bubble, styles.agentBubble]}>
+      {/* Bubble / Content Container */}
+      <View style={isUser ? [styles.userBubble, { backgroundColor: colors.userBubble, borderColor: colors.userBubbleBorder }] : styles.agentContentWrapper}>
         {/* Render tool call execution status badges */}
         {message.toolCalls && message.toolCalls.length > 0 && (
           <View style={styles.toolsContainer}>
             {message.toolCalls.map((tool, idx) => (
-              <View key={idx} style={[styles.toolBadge, { backgroundColor: colors.toolBadgeBg, borderColor: colors.toolBadgeBorder }]}>
+              <View key={idx} style={[styles.toolBadge, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }]}>
                 <Text style={styles.toolDot}>⚡</Text>
-                <Text style={[styles.toolText, { color: colors.toolBadgeText }]}>{tool.name}</Text>
+                <Text style={[styles.toolText, { color: colors.primary }]}>{tool.name}</Text>
               </View>
             ))}
           </View>
@@ -277,7 +277,7 @@ export default function MessageItem({ message }) {
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
-    maxWidth: 860,
+    maxWidth: 880,
     alignSelf: 'center',
     flexDirection: 'row',
     marginVertical: 10,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    marginTop: 2,
+    marginTop: 4,
     flexShrink: 0,
   },
   userAvatarContainer: {
@@ -309,39 +309,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    marginTop: 2,
+    marginTop: 4,
     flexShrink: 0,
   },
   avatarIcon: {
     fontSize: 16,
   },
-  bubble: {
-    flex: 1,
-  },
   userBubble: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: 12,
+    borderRadius: 18,
     borderTopRightRadius: 4,
     borderWidth: 1,
-    maxWidth: '80%',
+    maxWidth: '82%',
     alignSelf: 'flex-end',
   },
-  agentBubble: {
-    backgroundColor: 'transparent',
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    borderRadius: 0,
-    borderWidth: 0,
-    borderColor: 'transparent',
-    width: '100%',
+  agentContentWrapper: {
     flex: 1,
+    paddingTop: 4,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
   },
   agentContentContainer: {
     width: '100%',
   },
   toolsContainer: {
-    marginBottom: 8,
+    marginBottom: 10,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
@@ -349,9 +342,9 @@ const styles = StyleSheet.create({
   toolBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
     gap: 5,
   },
@@ -360,12 +353,12 @@ const styles = StyleSheet.create({
   },
   toolText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
     letterSpacing: 0.2,
   },
   messageText: {
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 23,
     letterSpacing: 0.2,
   },
   cursorText: {
@@ -375,7 +368,7 @@ const styles = StyleSheet.create({
   thinkingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
   thinkingDot: {
     width: 8,
@@ -388,3 +381,4 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+

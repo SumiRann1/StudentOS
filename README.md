@@ -1,4 +1,4 @@
-# 🎓 Student OS v5 Pro
+# 🎓 Student OS
 
 > **An LLM-Powered Autonomous Agent System for Managing Academic Timetables, Google Classroom, Student Emails, and Automated Background Workflows.**
 
@@ -18,35 +18,31 @@
 
 ## 🌟 Overview
 
-**Student OS** is an intelligent, multi-agent AI assistant and automated background workflow system designed for university students. Powered by **FastAPI**, **LangGraph Orchestrator**, **APScheduler Background Synchronization**, and an **Obsidian Space Slate React Native frontend**, Student OS enables students to manage class schedules, query Google Classroom assignments, search emails, grade pre-submission coursework, and receive zero-token background updates.
+**Student OS** is an intelligent, multi-agent AI assistant and automated background workflow system designed for university students. Powered by **FastAPI**, **LangGraph Orchestrator**, **APScheduler Background Synchronization**, and a **Linear & Vercel Ultra-Sleek Glassmorphism React Native frontend**, Student OS enables students to manage class schedules, query Google Classroom assignments, search emails, grade pre-submission coursework, and view zero-token background updates.
 
 ---
 
 ## ✨ Key Features & Capabilities
 
-- 🎨 **Obsidian Space Slate Dark UI/UX**:
-  - Cosmic slate aesthetic with obsidian dark palette (`#0B0F19`), glowing accents, and glassmorphic card elements.
-  - Interactive **Burger Menu Drawer** (`☰`) featuring Kolkata IST real-time clock, server connection health indicator, user avatar, and session management.
-  - **Animated Token Streaming Cursor (`▋`)** and pulsing thinking state indicators.
-  - Floating prompt bar with **📷 Vision OCR launcher modal** for coursework and exam question parsing.
+- 🎨 **Linear & Vercel Ultra-Sleek Glassmorphism UI/UX**:
+  - 6 curated HSL dark themes (`Linear Glass & Azure Glow`, `Linear Midnight`, `Raycast Cyberpunk`, `Supabase Forest`, `Vercel Crimson`, `Solarized Amber`).
+  - **Command Center Dashboard**: Hero Spotlight Cards (`Pending Deadlines`, `Priority Mails`, `Class Hours Today`), category filter toolbar tabs (`🌟 All Feeds`, `📚 Assignments`, `📅 Timetable`, `✉️ Mails`), live class spotlight banner, and clickable feed cards opening direct web URLs (`Open Classroom ↗`, `Open Email ↗`).
 
-- ⚙️ **Zero-LLM Background Automation Scheduler** (`automation.md`):
+- ⚙️ **Background Automation Scheduler** :
   - Async background worker powered by **APScheduler** & **SQLAlchemyJobStore** (`db/automation.db`).
-  - Periodically fetches upcoming assignment deadlines, unread priority emails, and daily timetables directly without consuming LLM API tokens.
+  - Periodically fetches upcoming assignment deadlines, unread priority emails, and daily timetables directly without consuming LLM API tokens. It uses the tools made while implementing the sub-agents.
   - Automatically saves formatted Markdown digest threads in local SQLite database (`db/StudentOS.db`).
 
-- ⚡ **Zero-LLM Dynamic Dashboard REST Widgets**:
+- ⚡ **Dynamic Dashboard REST Widgets**:
   - **`GET /timetable/next-class`**: Calculates active class duration in hours and provides real-time countdown to next class.
   - **`GET /classroom/next-deadline`**: Dynamically evaluates the closest pending assignment due date with urgency badges (🔴 Due Today, 🟡 Due Tomorrow, 🟢 Upcoming).
   - **`GET /email/priority-latest`**: Delivers a 1-line unread email summary banner on the hero dashboard.
 
-- 📝 **Grader & Pre-Submission Feedback Agent**:
+- 📝 **Grader Feedback Agent**:
   - Analyzes coursework drafts against assignment rubrics, checking code logic, essay arguments, and structural formatting before final submission.
 
-- 🔒 **Persistent Session & OAuth PKCE Fix**:
-  - Supabase & Google OAuth 2.0 PKCE state verifier integration preventing redirect mismatches.
-  - Powered by `@react-native-async-storage/async-storage` across Android, iOS, and Web.
-
+- 🔒 **Persistent Session & OAuth Redirect Sync**:
+  - Supabase & Google OAuth 2.0 PKCE integration with automatic token extraction and URL bar state cleanup.
 ---
 
 ## 🏗️ Architecture & Core Concepts
@@ -55,19 +51,19 @@
 ┌────────────────────────────────────────────────────────┐
 │  React Native / Expo Frontend (Android, iOS & Web)     │
 │  - SSE Parser (chatStream.js) & Thread Session Engine  │
-│  - Zero-LLM Dashboard REST Widgets & OcrModal          │
+│  - Dashboard REST Widgets & OcrModal                   │
 └───────────────────────────┬────────────────────────────┘
                             │  HTTP / SSE Stream (/chat/stream)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │  Python FastAPI Server (FastAPI/main.py)               │
 │  - Real-time StreamingResponse & Pydantic Validation   │
-│  - APScheduler Lifespan Manager & Zero-LLM Endpoints   │
+│  - APScheduler Lifespan Manager & Endpoints            │
 └─────────────┬──────────────────────────────┬───────────┘
               │                              │
               ▼                              ▼
 ┌─────────────────────────────┐  ┌─────────────────────────────┐
-│ LangGraph Agent Orchestrator│  │ Zero-LLM Background Worker  │
+│ LangGraph Agent Orchestrator│  │ Background Workers          │
 │ - Email Agent               │  │ - Classroom Job             │
 │ - Classroom Agent           │  │ - Email Job                 │
 │ - Timetable Agent           │  │ - Timetable Job             │
@@ -76,11 +72,9 @@
 ```
 
 ### Specialized Documentation Links
-- 📘 **[Automation & Scheduler Guide](file:///home/sumirann/Documents/StudentOS/automation.md)**: Deep dive into APScheduler, zero-LLM connector jobs, and SQLite background persistence.
-- 📙 **[Backend Architecture Guide](file:///home/sumirann/Documents/StudentOS/backend.md)**: Details on LangGraph orchestration, tool binding, timezone conversion, and FastAPI endpoints.
-- 📗 **[Frontend Engineering Guide](file:///home/sumirann/Documents/StudentOS/frontend.md)**: React Native setup, Obsidian Space Slate styling, SSE streaming, and Markdown table rendering.
-- 📕 **[Future Roadmap & Checklist](file:///home/sumirann/Documents/StudentOS/future.md)**: Completed milestones and future feature roadmap.
-- 📔 **[Session Notes](file:///home/sumirann/Documents/StudentOS/SESSION_NOTES.md)**: Architecture notes and trajectory history.
+- 📘 **[Automation & Scheduler Guide](file:///home/sumirann/Documents/StudentOS/automation.md)**: APScheduler, zero-LLM connector jobs, and SQLite background persistence.
+- 📙 **[Backend Architecture Guide](file:///home/sumirann/Documents/StudentOS/backend.md)**: LangGraph orchestration, tool binding, timezone conversion, and FastAPI endpoints.
+- 📗 **[Frontend Engineering Guide](file:///home/sumirann/Documents/StudentOS/frontend.md)**: React Native setup, glassmorphism design system, SSE streaming, and component specs.
 
 ---
 
@@ -92,22 +86,22 @@ StudentOS/
 │   ├── main.py                 # Application entry point & APScheduler lifespan
 │   └── router/                 # API router modules
 │       ├── chats/              # Chat SSE stream & Grader API routes
-│       ├── dashboard/          # Zero-LLM dashboard REST endpoints
+│       ├── dashboard/          # Dashboard REST endpoints
 │       ├── setup/              # Setup & backend health status routes
-│       └── auth/               # OAuth PKCE & session authentication
+│       └── auth/               # OAuth Supabase Setup
 ├── backend/                    # LangGraph Multi-Agent Engine & Tools
 │   ├── state.py                # AgentState definition & system prompts
 │   ├── config.py               # LLM model configuration
-│   ├── automation/             # Zero-LLM background cron connectors
-│   │   ├── classroom.py        # Google Classroom assignment background job
-│   │   ├── email.py            # Gmail unread priority digest job
+│   ├── automation/             # Background cron connectors
+│   │   ├── classroom.py        # Classroom assignment job
+│   │   ├── email.py            # Gmail job
 │   │   └── timetable.py        # Daily timetable & holiday background job
 │   └── agents/                 # Specialized LangGraph Sub-Agents
 │       ├── orchastetor/        # Router graph & state manager
 │       ├── classroom/          # Classroom tools & graph
 │       ├── email/              # Gmail tools & graph
 │       ├── timetable/          # Timetable & schedule graph
-│       └── grader/             # Pre-submission rubric grading tool
+│       └── grader/             # Grading tool
 ├── db/                         # Database & Persistence Layer
 │   ├── database.py             # SQLite thread & message history engine
 │   ├── automation_db.py        # SQLAlchemyJobStore config for APScheduler
@@ -115,13 +109,14 @@ StudentOS/
 │   └── automation.db           # Persistent SQLite cron jobstore database
 ├── data/                       # Credentials, Tokens & Datasets
 │   ├── timetable.json          # Academic schedule & holiday dataset
-│   └── *_oauth_credentials.json# Google OAuth secrets & tokens
+│   └── *_oauth_credentials.json# Google OAuth secrets & tokens(Specific for user)
 ├── frontend/                   # React Native / Expo Mobile & Web App
 │   ├── App.js                  # Main application entry point
 │   └── src/
 │       ├── components/         # Header, LandingHero, MessageItem, OcrModal, etc.
 │       ├── services/           # chatStream, storage, authApi, schedulerApi
-│       └── theme/              # Obsidian Space Slate dark color tokens
+│       └── theme/              # HSL 6-theme dark design system
+├── DESIGN.md                   # Design System Specifications
 ├── automation.md               # Automation Architecture Guide
 ├── backend.md                  # Backend Engineering Guide
 ├── frontend.md                 # Frontend Engineering Guide
@@ -190,22 +185,3 @@ npx expo start --web
 
 ---
 
-## 📄 License
-
-This project is licensed under the **MIT License**.
-*: Cache lecture schedules and pending assignments so students can check deadlines without campus Wi-Fi.
-3. **RAG (Retrieval-Augmented Generation)**: Vector database (**ChromaDB** / **Qdrant**) to index uploaded lecture slides and syllabus PDFs.
-4. **Background Sync Worker**: Scheduled background worker (**Celery** / **APScheduler**) to periodically sync emails and assignments.
-
-### 🚀 Future Feature Expansion Roadmap
-- **Phase 1: Smart Push Notifications (`expo-notifications`)**: Lecture alerts 15m prior; deadline warnings 24h & 3h prior.
-- **Phase 2: Multi-LMS Integration**: Connectors for **Canvas LMS**, **Moodle**, **Blackboard**, and **Piazza**.
-- **Phase 3: Multimodal Vision Homework Assistant**: Solve textbook equations & lab diagrams from photos.
-- **Phase 4: AI Flashcard & Quiz Generator**: Spaced-repetition study flashcards automatically generated from coursework.
-- **Phase 5: Grade Predictor & GPA Analytics**: Course grade tracking and target final exam score estimation.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**.

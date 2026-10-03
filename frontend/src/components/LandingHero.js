@@ -9,9 +9,8 @@ import {
   ScrollView,
   Linking,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
-import Markdown from 'react-native-markdown-display';
-import { colors } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import {
   triggerJobOnDemand,
@@ -122,17 +121,86 @@ const parseTimetableItems = (markdownText) => {
   return items;
 };
 
+const getSubmissionBadgeStyle = (item) => {
+  const statusType = item.statusType;
+  const state = (item.submissionState || item.state || 'NEW').toUpperCase();
 
-export default function ClaudeLandingHero({
+  if (statusType === 'graded' || state === 'RETURNED' || (item.assignedGrade !== undefined && item.assignedGrade !== null)) {
+    const gradeStr = (item.assignedGrade !== undefined && item.assignedGrade !== null)
+      ? (item.maxPoints ? `Graded: ${item.assignedGrade}/${item.maxPoints}` : `Graded: ${item.assignedGrade}`)
+      : (item.statusLabel || 'Graded');
+    return {
+      label: item.statusLabel || gradeStr,
+      badgeBg: 'rgba(139, 92, 246, 0.15)',
+      badgeBorder: 'rgba(139, 92, 246, 0.35)',
+      textColor: '#A78BFA',
+      icon: '✨'
+    };
+  }
+
+  if (statusType === 'turned_in' || state === 'TURNED_IN') {
+    if (item.late || statusType === 'late') {
+      return {
+        label: item.statusLabel || 'Submitted Late',
+        badgeBg: 'rgba(245, 158, 11, 0.15)',
+        badgeBorder: 'rgba(245, 158, 11, 0.35)',
+        textColor: '#FBBF24',
+        icon: '⚠️'
+      };
+    }
+    return {
+      label: item.statusLabel || 'Turned In',
+      badgeBg: 'rgba(16, 185, 129, 0.15)',
+      badgeBorder: 'rgba(16, 185, 129, 0.35)',
+      textColor: '#34D399',
+      icon: '✅'
+    };
+  }
+
+  if (statusType === 'reclaimed' || state === 'RECLAIMED_BY_STUDENT') {
+    return {
+      label: item.statusLabel || 'Draft',
+      badgeBg: 'rgba(249, 115, 22, 0.15)',
+      badgeBorder: 'rgba(249, 115, 22, 0.35)',
+      textColor: '#FB923C',
+      icon: '↩️'
+    };
+  }
+
+  if (statusType === 'overdue' || (item.late && state !== 'TURNED_IN')) {
+    return {
+      label: item.statusLabel || 'Overdue',
+      badgeBg: 'rgba(244, 63, 94, 0.15)',
+      badgeBorder: 'rgba(244, 63, 94, 0.35)',
+      textColor: '#F43F5E',
+      icon: '🚨'
+    };
+  }
+
+  return {
+    label: item.statusLabel || 'Assigned',
+    badgeBg: 'rgba(56, 189, 248, 0.15)',
+    badgeBorder: 'rgba(56, 189, 248, 0.35)',
+    textColor: '#38BDF8',
+    icon: '⏳'
+  };
+};
+
+export default function LandingHero({
   userName,
   onSelectPrompt,
   onOpenOcrModal,
+  onTriggerAutomation,
+  runningJob,
 }) {
   const { colors } = useTheme();
   const [greeting, setGreeting] = useState('Good morning');
   const [nextClassInfo, setNextClassInfo] = useState(null);
   const [deadlinesList, setDeadlinesList] = useState([]);
   const [widgets, setWidgets] = useState(INITIAL_WIDGETS);
+
+  // Active Category Filter Tab state ('all' | 'deadlines' | 'timetable' | 'email')
+  const [activeTab, setActiveTab] = useState('all');
 
   // Per-category expand/collapse states (default: 3 items visible)
   const [showAllDeadlines, setShowAllDeadlines] = useState(false);
@@ -147,7 +215,6 @@ export default function ClaudeLandingHero({
     loadLastAutomatedResults();
     loadStructuredDeadlines();
 
-    // 30-second live class countdown ticker
     const timer = setInterval(() => {
       refreshNextClassInfo();
     }, 30000);
@@ -304,14 +371,17 @@ export default function ClaudeLandingHero({
   const displayedEmails = showAllEmails ? emailItems : emailItems.slice(0, 3);
   const displayedTimetable = showAllTimetable ? timetableItems : timetableItems.slice(0, 3);
 
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 820;
+
   return (
     <ScrollView
       style={styles.scrollView}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[styles.container, isDesktop && { maxWidth: 1180 }]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      {/* 🌟 Top Spotlight Header */}
+      {/* 🌟 Top Greeting & Command Center Header */}
       <View style={styles.topSpotlightHeader}>
         <View style={styles.userGreetingRow}>
           <View style={styles.avatarGlowContainer}>
@@ -332,7 +402,7 @@ export default function ClaudeLandingHero({
 
         {/* Sync All Button Header Row */}
         <View style={styles.topSyncHeaderRow}>
-          <Text style={[styles.workspaceSubtitleText, { color: colors.textSecondary }]}>Live Academic Schedule & Deadlines Feed</Text>
+          <Text style={[styles.workspaceSubtitleText, { color: colors.textSecondary }]}>Live Academic Feed & Schedule Intelligence</Text>
 
           <TouchableOpacity
             style={[styles.syncAllButton, { backgroundColor: colors.primaryGlow, borderColor: colors.primary }, isSyncingAll && styles.syncAllButtonActive]}
@@ -354,33 +424,162 @@ export default function ClaudeLandingHero({
           </TouchableOpacity>
         </View>
 
-        {/* 📊 Academic Stats Bar */}
-        <View style={[styles.statsBarRow, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}>
-          <View style={styles.statBox}>
-            <Text style={[styles.statBoxNumber, { color: colors.primary }]}>{deadlinesList.length}</Text>
-            <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Pending Deadlines</Text>
-          </View>
+        {/* 📊 OPTION B: TOP KPI SPOTLIGHT BANNER */}
+        <View style={styles.kpiHeroBannerRow}>
+          {/* KPI 1: Pending Deadlines */}
+          <TouchableOpacity
+            style={[
+              styles.kpiSpotlightCard,
+              { backgroundColor: colors.cardBackgroundTranslucent, borderColor: activeTab === 'deadlines' ? colors.primary : colors.cardBorder },
+              activeTab === 'deadlines' && { backgroundColor: colors.primaryGlow },
+            ]}
+            onPress={() => setActiveTab('deadlines')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.kpiCardHeaderRow}>
+              <Text style={styles.kpiCardIcon}>📚</Text>
+              <View style={[styles.kpiBadgePill, { backgroundColor: 'rgba(56, 189, 248, 0.15)', borderColor: 'rgba(56, 189, 248, 0.35)' }]}>
+                <Text style={[styles.kpiBadgeText, { color: '#38BDF8' }]}>ASSIGNMENTS</Text>
+              </View>
+            </View>
+            <Text style={[styles.kpiNumberText, { color: colors.textPrimary }]}>{deadlinesList.length}</Text>
+            <Text style={[styles.kpiLabelText, { color: colors.textSecondary }]}>Pending Course Deadlines</Text>
+          </TouchableOpacity>
 
-          <View style={styles.statDivider} />
+          {/* KPI 2: Priority Mails */}
+          <TouchableOpacity
+            style={[
+              styles.kpiSpotlightCard,
+              { backgroundColor: colors.cardBackgroundTranslucent, borderColor: activeTab === 'email' ? colors.primary : colors.cardBorder },
+              activeTab === 'email' && { backgroundColor: colors.primaryGlow },
+            ]}
+            onPress={() => setActiveTab('email')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.kpiCardHeaderRow}>
+              <Text style={styles.kpiCardIcon}>✉️</Text>
+              <View style={[styles.kpiBadgePill, { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.35)' }]}>
+                <Text style={[styles.kpiBadgeText, { color: '#34D399' }]}>NOTICES</Text>
+              </View>
+            </View>
+            <Text style={[styles.kpiNumberText, { color: colors.emerald }]}>{emailItems.length}</Text>
+            <Text style={[styles.kpiLabelText, { color: colors.textSecondary }]}>Priority Unread Mails</Text>
+          </TouchableOpacity>
 
-          <View style={styles.statBox}>
-            <Text style={[styles.statBoxNumber, { color: colors.emerald }]}>{emailItems.length}</Text>
-            <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Priority Unread Mails</Text>
-          </View>
-
-          <View style={styles.statDivider} />
-
-          <View style={styles.statBox}>
-            <Text style={[styles.statBoxNumber, { color: colors.cyan }]}>
+          {/* KPI 3: Class Hours Today */}
+          <TouchableOpacity
+            style={[
+              styles.kpiSpotlightCard,
+              { backgroundColor: colors.cardBackgroundTranslucent, borderColor: activeTab === 'timetable' ? colors.primary : colors.cardBorder },
+              activeTab === 'timetable' && { backgroundColor: colors.primaryGlow },
+            ]}
+            onPress={() => setActiveTab('timetable')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.kpiCardHeaderRow}>
+              <Text style={styles.kpiCardIcon}>⚡</Text>
+              <View style={[styles.kpiBadgePill, { backgroundColor: 'rgba(6, 182, 212, 0.15)', borderColor: 'rgba(6, 182, 212, 0.35)' }]}>
+                <Text style={[styles.kpiBadgeText, { color: '#06B6D4' }]}>TIMETABLE</Text>
+              </View>
+            </View>
+            <Text style={[styles.kpiNumberText, { color: colors.cyan }]}>
               {nextClassInfo?.active_hours || 0}h
             </Text>
-            <Text style={[styles.statBoxLabel, { color: colors.textSecondary }]}>Active Class Hours</Text>
-          </View>
+            <Text style={[styles.kpiLabelText, { color: colors.textSecondary }]}>Active Class Duration</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 🚀 Quick Action Prompts Bar */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickChipsScrollView} contentContainerStyle={styles.quickChipsRow}>
+          {onOpenOcrModal && (
+            <TouchableOpacity
+              style={[styles.quickChipBtn, { backgroundColor: colors.cardBackground, borderColor: colors.primary }]}
+              onPress={onOpenOcrModal}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.quickChipIcon}>📊</Text>
+              <Text style={[styles.quickChipText, { color: colors.primary }]}>Scan Marksheet (GPA)</Text>
+            </TouchableOpacity>
+          )}
+
+          {onSelectPrompt && (
+            <>
+              <TouchableOpacity
+                style={[styles.quickChipBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+                onPress={() => onSelectPrompt('What are all my upcoming assignment deadlines across my courses?')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.quickChipIcon}>📚</Text>
+                <Text style={[styles.quickChipText, { color: colors.textPrimary }]}>Pending Assignments</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.quickChipBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+                onPress={() => onSelectPrompt('Summarize all my unread emails and important notices.')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.quickChipIcon}>✉️</Text>
+                <Text style={[styles.quickChipText, { color: colors.textPrimary }]}>Email Digest</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.quickChipBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+                onPress={() => onSelectPrompt('What is my complete timetable and class schedule for today?')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.quickChipIcon}>📅</Text>
+                <Text style={[styles.quickChipText, { color: colors.textPrimary }]}>Today's Schedule</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </ScrollView>
+
+        {/* 🏷️ CATEGORY FILTER TABS TOOLBAR */}
+        <View style={styles.filterTabsRow}>
+          <TouchableOpacity
+            style={[styles.filterTabPill, activeTab === 'all' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+            onPress={() => setActiveTab('all')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.filterTabText, { color: activeTab === 'all' ? '#FFFFFF' : colors.textSecondary }]}>
+              🌟 All Feeds
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterTabPill, activeTab === 'deadlines' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+            onPress={() => setActiveTab('deadlines')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.filterTabText, { color: activeTab === 'deadlines' ? '#FFFFFF' : colors.textSecondary }]}>
+              📚 Assignments ({deadlinesList.length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterTabPill, activeTab === 'timetable' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+            onPress={() => setActiveTab('timetable')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.filterTabText, { color: activeTab === 'timetable' ? '#FFFFFF' : colors.textSecondary }]}>
+              📅 Timetable ({timetableItems.length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterTabPill, activeTab === 'email' && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+            onPress={() => setActiveTab('email')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.filterTabText, { color: activeTab === 'email' ? '#FFFFFF' : colors.textSecondary }]}>
+              ✉️ Mails ({emailItems.length})
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
       {/* 🔴 Live Next Class Spotlight Card */}
-      {nextClassInfo && (
+      {nextClassInfo && (activeTab === 'all' || activeTab === 'timetable') && (
         <View style={[styles.nextClassSpotlightCard, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}>
           {nextClassInfo.status === 'ongoing' && nextClassInfo.current_class ? (
             <View style={styles.spotlightRow}>
@@ -459,201 +658,236 @@ export default function ClaudeLandingHero({
         </View>
       )}
 
-      {/* Category 1: Classroom Deadlines */}
-      <View style={styles.categorySection}>
-        <View style={styles.categoryHeaderRow}>
-          <View>
-            <Text style={[styles.categoryTitleText, { color: colors.textPrimary }]}>Deadlines Timeline</Text>
-            <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]}>Google Classroom coursework</Text>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.refreshCategoryBtn, { borderColor: colors.cardBorder }]}
-            onPress={() => handleSyncSingleCategory('classroom')}
-            disabled={syncingWidgetId === 'classroom' || isLoadingDeadlines}
-          >
-            {syncingWidgetId === 'classroom' || isLoadingDeadlines ? (
-              <ActivityIndicator size="small" color={colors.primary} />
-            ) : (
-              <Text style={[styles.refreshIconText, { color: colors.primary }]}>SYNC</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {deadlinesList.length > 0 ? (
-          <View style={styles.cardsFeedContainer}>
-            {displayedDeadlines.map((item, idx) => (
-              <View key={item.id || idx} style={[styles.itemCard, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}>
-                <View style={styles.cardHeaderRow}>
-                  <View style={[styles.urgencyPulseDot, { backgroundColor: item.urgency === 'today' ? colors.rose : item.urgency === 'tomorrow' ? colors.amber : colors.emerald }]} />
-                  <View style={styles.cardBodyContent}>
-                    <Text style={[styles.courseTagText, { color: colors.cyan }]}>{item.courseName}</Text>
-                    <Text style={[styles.itemMainTitle, { color: colors.textPrimary }]}>{item.title}</Text>
+      {/* 📊 Bento Grid Section Container */}
+      <View style={[styles.bentoGridWrapper, isDesktop && styles.bentoGridDesktop]}>
+        {/* Left Column (Assignments & Timetable) */}
+        {(activeTab === 'all' || activeTab === 'deadlines' || activeTab === 'timetable') && (
+          <View style={[styles.bentoMainColumn, isDesktop && { flex: 1 }]}>
+            {/* Category 1: Classroom Deadlines */}
+            {(activeTab === 'all' || activeTab === 'deadlines') && (
+              <View style={styles.categorySection}>
+                <View style={styles.categoryHeaderRow}>
+                  <View>
+                    <Text style={[styles.categoryTitleText, { color: colors.textPrimary }]}>Deadlines Timeline</Text>
+                    <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]}>Google Classroom coursework & submission status</Text>
                   </View>
+
+                  <TouchableOpacity
+                    style={[styles.refreshCategoryBtn, { borderColor: colors.cardBorder }]}
+                    onPress={() => handleSyncSingleCategory('classroom')}
+                    disabled={syncingWidgetId === 'classroom' || isLoadingDeadlines}
+                  >
+                    {syncingWidgetId === 'classroom' || isLoadingDeadlines ? (
+                      <ActivityIndicator size="small" color={colors.primary} />
+                    ) : (
+                      <Text style={[styles.refreshIconText, { color: colors.primary }]}>SYNC</Text>
+                    )}
+                  </TouchableOpacity>
                 </View>
 
-                <View style={styles.cardFooterRow}>
-                  <Text style={[styles.metaDueText, { color: colors.textSecondary }]}>Due: {item.due}</Text>
-                  {item.alternateLink ? (
-                    <TouchableOpacity onPress={() => Linking.openURL(item.alternateLink)}>
-                      <Text style={[styles.openLinkBtnText, { color: colors.primary }]}>Open ↗</Text>
-                    </TouchableOpacity>
-                  ) : null}
-                </View>
+                {deadlinesList.length > 0 ? (
+                  <View style={styles.cardsFeedContainer}>
+                    {displayedDeadlines.map((item, idx) => {
+                      const badge = getSubmissionBadgeStyle(item);
+                      const hasLink = !!item.alternateLink;
+                      return (
+                        <TouchableOpacity
+                          key={item.id || idx}
+                          style={[styles.itemCard, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}
+                          disabled={!hasLink}
+                          onPress={() => hasLink && Linking.openURL(item.alternateLink)}
+                          activeOpacity={0.75}
+                        >
+                          <View style={styles.cardHeaderRow}>
+                            <View style={[styles.urgencyPulseDot, { backgroundColor: item.urgency === 'today' ? colors.rose : item.urgency === 'tomorrow' ? colors.amber : colors.emerald }]} />
+                            <View style={styles.cardBodyContent}>
+                              <View style={styles.cardTitleTagRow}>
+                                <Text style={[styles.courseTagText, { color: colors.cyan }]}>{item.courseName}</Text>
+                                <View style={[styles.statusBadgePill, { backgroundColor: badge.badgeBg, borderColor: badge.badgeBorder }]}>
+                                  <Text style={styles.statusBadgeIcon}>{badge.icon}</Text>
+                                  <Text style={[styles.statusBadgeText, { color: badge.textColor }]}>{badge.label}</Text>
+                                </View>
+                              </View>
+                              <Text style={[styles.itemMainTitle, { color: colors.textPrimary }]}>{item.title}</Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.cardFooterRow}>
+                            <Text style={[styles.metaDueText, { color: colors.textSecondary }]}>Due: {item.due}</Text>
+                            {hasLink ? (
+                              <Text style={[styles.openLinkBtnText, { color: colors.primary }]}>Open Classroom ↗</Text>
+                            ) : null}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+
+                    {deadlinesList.length > 3 && (
+                      <TouchableOpacity
+                        style={[styles.viewMoreBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+                        onPress={() => setShowAllDeadlines(!showAllDeadlines)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={[styles.viewMoreBtnText, { color: colors.primary }]}>
+                          {showAllDeadlines
+                            ? 'View Less ▲'
+                            : `View More (${deadlinesList.length - 3} remaining) ▼`}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : (
+                  <View style={[styles.emptyCardBox, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
+                    <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Pending Deadlines</Text>
+                    <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>You are all caught up on your Google Classroom assignments.</Text>
+                  </View>
+                )}
               </View>
-            ))}
-
-            {/* Expand / Collapse Button */}
-            {deadlinesList.length > 3 && (
-              <TouchableOpacity
-                style={[styles.viewMoreBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
-                onPress={() => setShowAllDeadlines(!showAllDeadlines)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.viewMoreBtnText, { color: colors.primary }]}>
-                  {showAllDeadlines
-                    ? 'View Less ▲'
-                    : `View More (${deadlinesList.length - 3} remaining) ▼`}
-                </Text>
-              </TouchableOpacity>
             )}
-          </View>
-        ) : (
-          <View style={[styles.emptyCardBox, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Pending Deadlines</Text>
-            <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>You are all caught up on your Google Classroom assignments.</Text>
+
+            {/* Category 3: Today's Timetable Schedule */}
+            {(activeTab === 'all' || activeTab === 'timetable') && (
+              <View style={styles.categorySection}>
+                <View style={styles.categoryHeaderRow}>
+                  <View>
+                    <Text style={[styles.categoryTitleText, { color: colors.textPrimary }]}>{timetableTitle}</Text>
+                    <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]}>{timetableSubtitle}</Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.refreshCategoryBtn, { borderColor: colors.cardBorder }]}
+                    onPress={() => handleSyncSingleCategory('timetable')}
+                    disabled={syncingWidgetId === 'timetable'}
+                  >
+                    {syncingWidgetId === 'timetable' ? (
+                      <ActivityIndicator size="small" color={colors.primary} />
+                    ) : (
+                      <Text style={[styles.refreshIconText, { color: colors.primary }]}>SYNC</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {timetableItems.length > 0 ? (
+                  <View style={styles.cardsFeedContainer}>
+                    {displayedTimetable.map((item, idx) => (
+                      <View key={idx} style={[styles.itemCard, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}>
+                        <View style={styles.cardHeaderRow}>
+                          <View style={styles.cardBodyContent}>
+                            <Text style={[styles.courseTagText, { color: colors.cyan }]}>{item.time}</Text>
+                            <Text style={[styles.itemMainTitle, { color: colors.textPrimary }]}>{item.course}</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.cardFooterRow}>
+                          <Text style={[styles.metaDueText, { color: colors.textSecondary }]}>Venue: <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{item.venue}</Text></Text>
+                          <View style={styles.typeBadgePill}>
+                            <Text style={styles.typeBadgeText}>{item.type}</Text>
+                          </View>
+                        </View>
+                      </View>
+                    ))}
+
+                    {timetableItems.length > 3 && (
+                      <TouchableOpacity
+                        style={[styles.viewMoreBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+                        onPress={() => setShowAllTimetable(!showAllTimetable)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={[styles.viewMoreBtnText, { color: colors.primary }]}>
+                          {showAllTimetable
+                            ? 'View Less ▲'
+                            : `View More (${timetableItems.length - 3} remaining) ▼`}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : (
+                  <View style={[styles.emptyCardBox, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
+                    <Text style={styles.emptyIcon}>📅</Text>
+                    <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Classes Scheduled!</Text>
+                    <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>Enjoy your day off or holiday.</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
         )}
-      </View>
 
-      {/* Category 2: Priority Unread Emails */}
-      <View style={styles.categorySection}>
-        <View style={styles.categoryHeaderRow}>
-          <View>
-            <Text style={[styles.categoryTitleText, { color: colors.textPrimary }]}>Priority Unread Mails</Text>
-            <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]}>Recent professor & department notices</Text>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.refreshCategoryBtn, { borderColor: colors.cardBorder }]}
-            onPress={() => handleSyncSingleCategory('email')}
-            disabled={syncingWidgetId === 'email'}
-          >
-            {syncingWidgetId === 'email' ? (
-              <ActivityIndicator size="small" color={colors.primary} />
-            ) : (
-              <Text style={[styles.refreshIconText, { color: colors.primary }]}>SYNC</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {emailItems.length > 0 ? (
-          <View style={styles.cardsFeedContainer}>
-            {displayedEmails.map((item, idx) => (
-              <View key={idx} style={[styles.itemCard, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}>
-                <View style={styles.cardHeaderRow}>
-                  <View style={styles.cardBodyContent}>
-                    <Text style={[styles.itemMainTitle, { color: colors.textPrimary }]}>{item.subject}</Text>
-                    {item.sender ? <Text style={[styles.emailSenderText, { color: colors.textSecondary }]}>From: {item.sender}</Text> : null}
-                    {item.snippet ? <Text style={[styles.emailSnippetText, { color: colors.textMuted }]} numberOfLines={2}>"{item.snippet}"</Text> : null}
-                  </View>
+        {/* Right Column (Priority Unread Emails) */}
+        {(activeTab === 'all' || activeTab === 'email') && (
+          <View style={[styles.bentoSidebarColumn, isDesktop && { flex: 1 }]}>
+            {/* Category 2: Priority Unread Emails */}
+            <View style={styles.categorySection}>
+              <View style={styles.categoryHeaderRow}>
+                <View>
+                  <Text style={[styles.categoryTitleText, { color: colors.textPrimary }]}>Priority Unread Mails</Text>
+                  <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]}>Recent professor & department notices</Text>
                 </View>
 
-                {item.link ? (
-                  <View style={styles.cardFooterRow}>
-                    <Text style={[styles.metaDueText, { color: colors.textSecondary }]}>Gmail Unread Notice</Text>
-                    <TouchableOpacity onPress={() => Linking.openURL(item.link)}>
-                      <Text style={[styles.openLinkBtnText, { color: colors.primary }]}>Open Email ↗</Text>
+                <TouchableOpacity
+                  style={[styles.refreshCategoryBtn, { borderColor: colors.cardBorder }]}
+                  onPress={() => handleSyncSingleCategory('email')}
+                  disabled={syncingWidgetId === 'email'}
+                >
+                  {syncingWidgetId === 'email' ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <Text style={[styles.refreshIconText, { color: colors.primary }]}>SYNC</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {emailItems.length > 0 ? (
+                <View style={styles.cardsFeedContainer}>
+                  {displayedEmails.map((item, idx) => {
+                    const hasLink = !!item.link;
+                    return (
+                      <TouchableOpacity
+                        key={idx}
+                        style={[styles.itemCard, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}
+                        disabled={!hasLink}
+                        onPress={() => hasLink && Linking.openURL(item.link)}
+                        activeOpacity={0.75}
+                      >
+                        <View style={styles.cardHeaderRow}>
+                          <View style={styles.cardBodyContent}>
+                            <Text style={[styles.itemMainTitle, { color: colors.textPrimary }]}>{item.subject}</Text>
+                            {item.sender ? <Text style={[styles.emailSenderText, { color: colors.textSecondary }]}>From: {item.sender}</Text> : null}
+                            {item.snippet ? <Text style={[styles.emailSnippetText, { color: colors.textMuted }]} numberOfLines={2}>"{item.snippet}"</Text> : null}
+                          </View>
+                        </View>
+
+                        {hasLink ? (
+                          <View style={styles.cardFooterRow}>
+                            <Text style={[styles.metaDueText, { color: colors.textSecondary }]}>Gmail Unread Notice</Text>
+                            <Text style={[styles.openLinkBtnText, { color: colors.primary }]}>Open Email ↗</Text>
+                          </View>
+                        ) : null}
+                      </TouchableOpacity>
+                    );
+                  })}
+
+                  {emailItems.length > 3 && (
+                    <TouchableOpacity
+                      style={[styles.viewMoreBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+                      onPress={() => setShowAllEmails(!showAllEmails)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.viewMoreBtnText, { color: colors.primary }]}>
+                        {showAllEmails
+                          ? 'View Less ▲'
+                          : `View More (${emailItems.length - 3} remaining) ▼`}
+                      </Text>
                     </TouchableOpacity>
-                  </View>
-                ) : null}
-              </View>
-            ))}
-
-            {/* Expand / Collapse Button */}
-            {emailItems.length > 3 && (
-              <TouchableOpacity
-                style={[styles.viewMoreBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
-                onPress={() => setShowAllEmails(!showAllEmails)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.viewMoreBtnText, { color: colors.primary }]}>
-                  {showAllEmails
-                    ? 'View Less ▲'
-                    : `View More (${emailItems.length - 3} remaining) ▼`}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : (
-          <View style={[styles.emptyCardBox, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Unread Emails</Text>
-            <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>All priority emails from your inbox are read.</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Category 3: Today's Timetable Schedule */}
-      <View style={styles.categorySection}>
-        <View style={styles.categoryHeaderRow}>
-          <View>
-            <Text style={[styles.categoryTitleText, { color: colors.textPrimary }]}>{timetableTitle}</Text>
-            <Text style={[styles.categorySubtitleText, { color: colors.textSecondary }]}>{timetableSubtitle}</Text>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.refreshCategoryBtn, { borderColor: colors.cardBorder }]}
-            onPress={() => handleSyncSingleCategory('timetable')}
-            disabled={syncingWidgetId === 'timetable'}
-          >
-            {syncingWidgetId === 'timetable' ? (
-              <ActivityIndicator size="small" color={colors.primary} />
-            ) : (
-              <Text style={[styles.refreshIconText, { color: colors.primary }]}>SYNC</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {timetableItems.length > 0 ? (
-          <View style={styles.cardsFeedContainer}>
-            {displayedTimetable.map((item, idx) => (
-              <View key={idx} style={[styles.itemCard, { backgroundColor: colors.cardBackgroundTranslucent, borderColor: colors.cardBorder }]}>
-                <View style={styles.cardHeaderRow}>
-                  <View style={styles.cardBodyContent}>
-                    <Text style={[styles.courseTagText, { color: colors.cyan }]}>{item.time}</Text>
-                    <Text style={[styles.itemMainTitle, { color: colors.textPrimary }]}>{item.course}</Text>
-                  </View>
+                  )}
                 </View>
-
-                <View style={styles.cardFooterRow}>
-                  <Text style={[styles.metaDueText, { color: colors.textSecondary }]}>Venue: <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{item.venue}</Text></Text>
-                  <View style={styles.typeBadgePill}>
-                    <Text style={styles.typeBadgeText}>{item.type}</Text>
-                  </View>
+              ) : (
+                <View style={[styles.emptyCardBox, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
+                  <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Unread Emails</Text>
+                  <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>All priority emails from your inbox are read.</Text>
                 </View>
-              </View>
-            ))}
-
-            {/* Expand / Collapse Button */}
-            {timetableItems.length > 3 && (
-              <TouchableOpacity
-                style={[styles.viewMoreBtn, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
-                onPress={() => setShowAllTimetable(!showAllTimetable)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.viewMoreBtnText, { color: colors.primary }]}>
-                  {showAllTimetable
-                    ? 'View Less ▲'
-                    : `View More (${timetableItems.length - 3} remaining) ▼`}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : (
-          <View style={[styles.emptyCardBox, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
-            <Text style={styles.emptyIcon}>📅</Text>
-            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Classes Scheduled!</Text>
-            <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>Enjoy your day off or holiday.</Text>
+              )}
+            </View>
           </View>
         )}
       </View>
@@ -677,7 +911,7 @@ const styles = StyleSheet.create({
   
   /* Top Spotlight Header */
   topSpotlightHeader: {
-    marginBottom: 24,
+    marginBottom: 20,
     width: '100%',
   },
   userGreetingRow: {
@@ -739,6 +973,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 4,
+    marginBottom: 16,
     flexWrap: 'wrap',
     gap: 8,
   },
@@ -771,55 +1006,94 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  /* 📊 Stats Bar Row */
-  statsBarRow: {
+  /* 📊 OPTION B: TOP KPI HERO SPOTLIGHT BANNER */
+  kpiHeroBannerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginTop: 16,
+    gap: 12,
+    marginBottom: 16,
+    flexWrap: 'wrap',
+  },
+  kpiSpotlightCard: {
+    flex: 1,
+    minWidth: 180,
+    borderRadius: 18,
+    padding: 16,
     borderWidth: 1,
     ...(Platform.OS === 'web'
       ? {
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          boxShadow: '0 8px 24px -6px rgba(0, 0, 0, 0.4)',
         }
       : {}),
   },
-  statBox: {
-    flex: 1,
+  kpiCardHeaderRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  statBoxNumber: {
+  kpiCardIcon: {
     fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.4,
   },
-  statBoxLabel: {
+  kpiBadgePill: {
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  kpiBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  kpiNumberText: {
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  kpiLabelText: {
     fontSize: 12,
     fontWeight: '600',
     marginTop: 2,
-    textAlign: 'center',
   },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+
+  /* 🏷️ CATEGORY FILTER TABS TOOLBAR */
+  filterTabsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 12,
+    flexWrap: 'wrap',
+  },
+  filterTabPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  filterTabText: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 
   /* Live Next Class Spotlight Card */
   nextClassSpotlightCard: {
     width: '100%',
-    borderRadius: 20,
-    padding: 18,
+    borderRadius: 22,
+    padding: 20,
     borderWidth: 1,
-    marginBottom: 26,
+    marginBottom: 24,
     ...(Platform.OS === 'web'
       ? {
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          boxShadow: '0 12px 36px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)',
         }
       : {}),
   },
@@ -831,7 +1105,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    marginTop: 4,
+    marginTop: 5,
     marginRight: 12,
   },
   spotlightBody: {
@@ -843,12 +1117,13 @@ const styles = StyleSheet.create({
   spotlightTagText: {
     fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
   },
   spotlightCourseTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
     marginBottom: 8,
+    letterSpacing: -0.2,
   },
   spotlightSubtext: {
     fontSize: 13,
@@ -862,9 +1137,9 @@ const styles = StyleSheet.create({
   metaChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingHorizontal: 11,
+    paddingVertical: 6,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.12)',
@@ -887,12 +1162,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   categoryTitleText: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '800',
-    letterSpacing: 0.2,
+    letterSpacing: -0.3,
   },
   categorySubtitleText: {
     fontSize: 13,
@@ -900,25 +1175,32 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   refreshCategoryBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 9,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
   },
   refreshIconText: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
 
   cardsFeedContainer: {
-    gap: 10,
+    gap: 12,
   },
   itemCard: {
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 16,
+    padding: 16,
     borderWidth: 1,
+    ...(Platform.OS === 'web'
+      ? {
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 8px 24px -8px rgba(0, 0, 0, 0.35)',
+        }
+      : {}),
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -932,24 +1214,38 @@ const styles = StyleSheet.create({
     marginTop: 3,
     marginRight: 12,
   },
-  emailIconText: {
-    fontSize: 16,
-    marginRight: 10,
-    marginTop: 2,
-  },
-  timetableIconText: {
-    fontSize: 16,
-    marginRight: 10,
-    marginTop: 2,
-  },
   cardBodyContent: {
     flex: 1,
+  },
+  cardTitleTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 4,
+  },
+  statusBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 4,
+  },
+  statusBadgeIcon: {
+    fontSize: 10,
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   courseTagText: {
     fontSize: 11.5,
     fontWeight: '800',
     textTransform: 'uppercase',
-    marginBottom: 3,
     letterSpacing: 0.5,
   },
   itemMainTitle: {
@@ -1031,5 +1327,50 @@ const styles = StyleSheet.create({
   emptyDesc: {
     fontSize: 12,
     textAlign: 'center',
+  },
+
+  /* 🚀 Quick Chip Buttons */
+  quickChipsScrollView: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  quickChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  quickChipBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 6,
+  },
+  quickChipIcon: {
+    fontSize: 13,
+  },
+  quickChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+
+  /* 🍱 Bento Grid Wrapper Styles */
+  bentoGridWrapper: {
+    width: '100%',
+    flexDirection: 'column',
+  },
+  bentoGridDesktop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 20,
+  },
+  bentoMainColumn: {
+    width: '100%',
+  },
+  bentoSidebarColumn: {
+    width: '100%',
   },
 });
